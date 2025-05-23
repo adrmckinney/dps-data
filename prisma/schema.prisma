@@ -1,0 +1,241 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ************************************************************
+// |                     BASE MODELS                          |
+// ************************************************************
+
+model Year {
+  id                 Int                  @id @default(autoincrement())
+  startYear          String               @unique
+  endYear            String               @unique
+  schoolYear         String               @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  DataSource         DataSource[]
+  GradePopulation    GradePopulation[]
+  SubgroupPopulation SubgroupPopulation[]
+  PopulationSnapshot PopulationSnapshot[]
+  DisciplineData     DisciplineData[]
+}
+
+model Grade {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  alternativeName String            @unique
+  abbreviation    String            @unique
+  levelId         Int
+  level           Level             @relation(fields: [levelId], references: [id])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  GradePopulation GradePopulation[]
+}
+
+model Level {
+  id           Int       @id @default(autoincrement())
+  name         String    @unique
+  abbreviation String
+  schools      School[]
+  subjects     Subject[]
+  grade        Grade[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+}
+
+model School {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  code               Int                  @unique
+  abbreviation       String
+  otherNames         String[]
+  levelId            Int
+  level              Level                @relation(fields: [levelId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  GradePopulation    GradePopulation[]
+  SubgroupPopulation SubgroupPopulation[]
+  PopulationSnapshot PopulationSnapshot[]
+  DisciplineData     DisciplineData[]
+}
+
+model Discipline {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  abbreviation   String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  DisciplineData DisciplineData[]
+}
+
+model Subject {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  levelId   Int
+  level     Level    @relation(fields: [levelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model SubGroupType {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique // e.g., "Race", "Gender", "Race-Gender Combo", "Exceptionality"
+  subGroups SubGroup[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+}
+
+model SubGroup {
+  id           Int    @id @default(autoincrement())
+  name         String @unique // e.g., "Black Male", "All Male", "Students with Disabilities"
+  abbreviation String @unique // e.g., "BM", "M", "SWD"
+  typeId       Int
+  key          String @unique
+  secondaryKey String @unique
+
+  type               SubGroupType         @relation(fields: [typeId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  SubgroupPopulation SubgroupPopulation[]
+  DisciplineData     DisciplineData[]
+}
+
+// ************************************************************
+// |                    DYNAMIC MODELS                        |
+// ************************************************************
+enum DataType {
+  POPULATION
+  DEMOGRAPHICS
+  ACHIEVEMENT
+  DISCIPLINE
+  OTHER
+}
+
+enum DocType {
+  PDF
+  CSV
+}
+
+model DataSource {
+  id        Int      @id @default(autoincrement())
+  url       String   @unique // original external URL
+  localPath String? // optional path to backup (e.g., /pdfs/population_2024.pdf)
+  title     String?
+  yearId    Int?
+  published String?
+  notes     String?
+  dataType  DataType
+  docType   DocType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  year               Year?                @relation(fields: [yearId], references: [id])
+  GradePopulation    GradePopulation[]
+  PopulationSnapshot PopulationSnapshot[]
+  SubgroupPopulation SubgroupPopulation[]
+}
+
+// Normalized model of school populations where each school grade gets its own record per year
+// Good for query population by school, year, and grade independently, query population by school, 
+// year, and grade independently and is easier to query for charts/diagrams
+model GradePopulation {
+  id          Int      @id @default(autoincrement())
+  schoolId    Int
+  yearId      Int
+  gradeId     Int
+  count       Int
+  pdfSourceId Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  grade     Grade       @relation(fields: [gradeId], references: [id])
+  school    School      @relation(fields: [schoolId], references: [id])
+  year      Year        @relation(fields: [yearId], references: [id])
+  pdfSource DataSource? @relation(fields: [pdfSourceId], references: [id])
+
+  @@unique([schoolId, yearId, gradeId])
+}
+
+model SubgroupPopulation {
+  id          Int  @id @default(autoincrement())
+  schoolId    Int
+  yearId      Int
+  subgroupId  Int
+  count       Int
+  pdfSourceId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  school    School      @relation(fields: [schoolId], references: [id])
+  year      Year        @relation(fields: [yearId], references: [id])
+  subgroup  SubGroup    @relation(fields: [subgroupId], references: [id])
+  pdfSource DataSource? @relation(fields: [pdfSourceId], references: [id])
+
+  @@unique([schoolId, yearId, subgroupId])
+}
+
+// Flattened Model of school populations. Use this table for showing one
+// school for one year.
+model PopulationSnapshot {
+  id              Int      @id @default(autoincrement())
+  schoolId        Int
+  yearId          Int
+  preKindergarten Int?
+  kindergarten    Int?
+  firstGrade      Int?
+  secondGrade     Int?
+  thirdGrade      Int?
+  fourthGrade     Int?
+  fifthGrade      Int?
+  sixthGrade      Int?
+  seventhGrade    Int?
+  eighthGrade     Int?
+  ninthGrade      Int?
+  tenthGrade      Int?
+  eleventhGrade   Int?
+  twelfthGrade    Int?
+  ungraded        Int? // Possibly ungraded / special education?
+  studentTotal    Int // This does not include the number from xg col
+  total           Int // This includes all grades and sg col
+  pdfSourceId     Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  school    School      @relation(fields: [schoolId], references: [id])
+  year      Year        @relation(fields: [yearId], references: [id])
+  pdfSource DataSource? @relation(fields: [pdfSourceId], references: [id])
+
+  @@unique([schoolId, yearId])
+}
+
+model DisciplineData {
+  id              Int    @id @default(autoincrement())
+  disciplineId    Int
+  subGroupId      Int
+  schoolId        Int
+  yearId          Int
+  suspensionCount Int?
+  subGroupCount   Int?
+  percentage      Float?
+
+  school     School     @relation(fields: [schoolId], references: [id])
+  year       Year       @relation(fields: [yearId], references: [id])
+  discipline Discipline @relation(fields: [disciplineId], references: [id])
+  subGroup   SubGroup   @relation(fields: [subGroupId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now()) @updatedAt
+
+  @@unique([schoolId, yearId, disciplineId, subGroupId])
+}

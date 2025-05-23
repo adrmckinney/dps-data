@@ -1,0 +1,5 @@
+pandas
+tabula-py
+pdfplumber  # for text-based PDF extraction
+PyMuPDF      # alternative PDF parser
+requests
