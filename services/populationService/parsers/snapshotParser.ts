@@ -1,6 +1,6 @@
+import { NotFoundError } from '@/errors/AppError.ts';
 import type { DataSource, School, Year } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-import { BadDataError } from '../../../errors/BadData.ts';
 import type { RawPopulationRow } from '../../../types/population.ts';
 
 export const snapShotParser = (
@@ -19,7 +19,7 @@ export const snapShotParser = (
 
         const school = schoolMap.get(+row.Code);
         if (!school) {
-            throw new BadDataError(`No school record found with school code ${row.Code}`);
+            throw new NotFoundError(`No school record found with school code ${row.Code}`);
         }
 
         preparedSnapshotData.push({

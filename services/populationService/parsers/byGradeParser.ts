@@ -1,6 +1,6 @@
+import { NotFoundError } from '@/errors/AppError.ts';
 import type { DataSource, Grade, School, Year } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-import { BadDataError } from '../../../errors/BadData.ts';
 import type { RawPopulationRow } from '../../../types/population.ts';
 
 export const byGradeParser = (
@@ -19,7 +19,7 @@ export const byGradeParser = (
 
         const school = schoolMap.get(+row.Code);
         if (!school) {
-            throw new BadDataError(`No school record found with school code ${row.Code}`);
+            throw new NotFoundError(`No school record found with school code ${row.Code}`);
         }
 
         for (const [key, value] of Object.entries(row)) {
@@ -35,7 +35,7 @@ export const byGradeParser = (
 
             const grade = gradesMap.get(key);
             if (!grade) {
-                throw new BadDataError(`No grade record found with grade abbreviation ${key}`);
+                throw new NotFoundError(`No grade record found with grade abbreviation ${key}`);
             }
 
             preparedByGradeData.push({

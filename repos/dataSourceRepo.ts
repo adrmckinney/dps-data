@@ -1,10 +1,10 @@
+import { DBError } from '@/errors/AppError.ts';
 import type { DataSource } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-import { DBError } from '../errors/DBError.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const DataSourceRepo = {
-    async insert(dataSource: Prisma.DataSourceCreateInput): Promise<DataSource> {
+    async insertOrFetch(dataSource: Prisma.DataSourceCreateInput): Promise<DataSource> {
         try {
             return await prisma.dataSource.create({ data: dataSource });
         } catch (error: unknown) {

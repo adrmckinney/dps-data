@@ -1,5 +1,6 @@
 import type { School } from '@prisma/client';
-import { DBError } from '../errors/DBError.ts';
+
+import { DBError } from '@/errors/AppError.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const SchoolRepo = {

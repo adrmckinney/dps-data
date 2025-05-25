@@ -1,4 +1,3 @@
-// repositories/populationRepository.ts
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.ts';
 import type { BulkInsertResult } from '../types/repo.ts';
@@ -36,5 +35,15 @@ export const SubgroupPopulationRepo = {
                 error,
             };
         }
+    },
+
+    async getFilteredSubgroupPopulation(params: {
+        where: Prisma.SubgroupPopulationWhereInput;
+        orderBy?: Prisma.SubgroupPopulationOrderByWithRelationInput[];
+    }) {
+        return prisma.subgroupPopulation.findMany({
+            where: params.where,
+            orderBy: params.orderBy,
+        });
     },
 };

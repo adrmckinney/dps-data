@@ -1,6 +1,9 @@
+import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError.ts';
+import { buildSortOrder } from '@/filters/Filter.ts';
+import { buildSubgroupPopulationWhereClause } from '@/filters/subgroupPopulationFilterBuilder.ts';
+import { PopulationFilterPayload } from '@/types/queryFilters.ts';
 import type { DataSource, School, Year } from '@prisma/client';
 import { DataType, DocType, Prisma } from '@prisma/client';
-import { BadDataError } from '../../errors/BadData.ts';
 import { DataSourceRepo } from '../../repos/dataSourceRepo.ts';
 import { GradePopulationRepo } from '../../repos/gradePopulationRepo.ts';
 import { GradeRepo } from '../../repos/gradeRepo.ts';
@@ -16,6 +19,50 @@ import { bySubgroupParser } from './parsers/bySubgroupParser.ts';
 import { snapShotParser } from './parsers/snapshotParser.ts';
 
 export const PopulationService = {
+    async getSnapshots() {
+        console.log('The get snapshot route ran');
+        return;
+    },
+
+    async getPopulationSubgroups() {
+        const response = await tryCatch({
+            tryFn: async () => {
+                return SubgroupRepo.getAllSubgroups();
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in PopulationService getSubgroups',
+                    error
+                );
+            },
+        });
+
+        return response;
+    },
+
+    async getFilteredSubgroupPopulation(payload: PopulationFilterPayload) {
+        const where = buildSubgroupPopulationWhereClause(payload.filters ?? {});
+        const orderBy = buildSortOrder<Prisma.SubgroupPopulationOrderByWithRelationInput>(
+            payload.sort
+        );
+        return SubgroupPopulationRepo.getFilteredSubgroupPopulation({ where, orderBy });
+    },
+
+    // async getFilteredSubgroupPopulation(query: URLSearchParams) {
+    //     const filterParams: Record<string, string[]> = {};
+    //     for (const key of query.keys()) {
+    //         const allValues = query.getAll(key);
+    //         if (allValues.length > 0) {
+    //             filterParams[key] = allValues;
+    //         }
+    //     }
+
+    //     return SubgroupPopulationRepo.getFilteredSubgroupPopulation(filterParams);
+    // },
+
     async processPopulationPdf(pdfRecords: RawPopulationData[], linkData: { url: string }) {
         const date = pdfRecords[0].metadata.date.split(' ')[0];
         const tableOneTitle = pdfRecords[0].metadata.title;
@@ -33,12 +80,20 @@ export const PopulationService = {
             tryFn: async () => {
                 const response = await YearRepo.getYearBySchoolYear(date);
                 if (!response) {
-                    throw new BadDataError(`No year record found for date: ${date}`);
+                    throw new NotFoundError(
+                        `No year record found for date: ${date}. DB has likely not been seeded.`
+                    );
                 }
                 return response;
             },
             catchFn: error => {
-                throw error;
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in PopulationService getSubgroups',
+                    error
+                );
             },
         });
 
@@ -48,7 +103,7 @@ export const PopulationService = {
             title: `${tableOneTitle} and ${tableTwoTitle} - ${year.schoolYear}`,
             year: { connect: { id: year.id } },
             published: year.endYear,
-            notes: 'Two tables in one PDF. The first is Membership by Grade and the second is Membership by School, Ethnicity, Gender',
+            notes: 'Two tables in one PDF. One table is Membership by Grade and the other is Membership by School, Ethnicity, Gender',
             dataType: DataType.POPULATION,
             docType: DocType.PDF,
         };
@@ -65,7 +120,7 @@ export const PopulationService = {
 
         const dataSourceResponse = await tryCatch<DataSource>({
             tryFn: async () => {
-                return await DataSourceRepo.insert(dataSource);
+                return await DataSourceRepo.insertOrFetch(dataSource);
             },
             catchFn: async error => {
                 throw error;
@@ -182,29 +237,3 @@ export const PopulationService = {
         return [snapshotResponse, byGradeResponse, bySubgroupResponse];
     },
 };
-
-export async function getPopulationDataEntityIds(
-    code: string,
-    gradeAbbr: string,
-    schoolYear: string
-) {
-    const [school, grade, year] = await Promise.all([
-        SchoolRepo.getSchoolByCode(code),
-        GradeRepo.getGradeByAbbreviation(gradeAbbr),
-        YearRepo.getYearBySchoolYear(schoolYear),
-    ]);
-
-    if (!school) {
-        throw new Error(`School not found for code: ${code}`);
-    }
-
-    if (!grade) {
-        throw new Error(`Grade not found for abbreviation: ${gradeAbbr}`);
-    }
-
-    if (!year) {
-        throw new Error(`Year not found for school year: ${schoolYear}`);
-    }
-
-    return { schoolId: school?.id, gradeId: grade.id, yearId: year?.id };
-}

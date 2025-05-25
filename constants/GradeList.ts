@@ -117,7 +117,8 @@ export const grades: Record<string, Grade> = {
         value: 15,
     },
     thirteen: {
-        // This is a grade in the 2024-2025 demographics/population pdf !!??
+        // This is a grade in the 2024-2025 demographics/population pdf
+        // It's for Middle College. Unsure what it really stands for.
         name: 'Thirteenth Grade',
         alternativeName: 'unknown',
         abbreviation: '13',

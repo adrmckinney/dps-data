@@ -1,5 +1,5 @@
+import { DBError } from '@/errors/AppError.ts';
 import type { Year } from '@prisma/client';
-import { DBError } from '../errors/DBError.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const YearRepo = {
