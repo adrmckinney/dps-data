@@ -1,6 +1,6 @@
-import { DBError } from '@/errors/AppError.ts';
 import type { DataSource } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { DBError } from '../errors/AppError.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const DataSourceRepo = {

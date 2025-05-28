@@ -1,5 +1,5 @@
 // app/api/population/snapshots/route.ts
-import { PopulationService } from '@/services/populationService';
+import { PopulationService } from '@/services/populationService/populationService';
 import { NextResponse } from 'next/server';
 
 export async function GET() {

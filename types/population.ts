@@ -6,7 +6,7 @@ export type RawPopulationMeta = {
 
 export type RawPopulationRow = {
     School: string;
-    Code: string;
+    Code?: string;
     PK?: string;
     KI?: string;
     '01'?: string;
@@ -49,3 +49,14 @@ export type PopulationEntry = {
 };
 
 export type ExtractorType = 'school_population'; // extend with more if needed
+
+export type SubgroupPopulationResponse = {
+    id: number;
+    schoolId: number;
+    yearId: number;
+    subgroupId: number;
+    count: number;
+    pdfSourceId: number;
+    createdAt: string;
+    updatedAt: string;
+};

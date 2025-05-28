@@ -13,9 +13,11 @@ export type Operator =
 
 export type FilterValue = string | number | boolean | string[] | number[];
 
+export type OrderDirection = 'asc' | 'desc';
+
 export type FilterPayload = {
     filters?: Record<string, { operator: Operator; value: FilterValue }>;
-    sort?: { field: string; direction: 'asc' | 'desc' };
+    sort?: { field: string; direction: OrderDirection };
 };
 
 export type FilterCondition = {
@@ -23,10 +25,10 @@ export type FilterCondition = {
     value: string | number | boolean | (string | number)[];
 };
 
-export type PopulationFilterPayload = {
+export type QueryFilterPayload = {
     filters?: Record<string, FilterCondition>;
     sort?: {
         field: string;
-        direction: 'asc' | 'desc';
+        direction: OrderDirection;
     };
 };

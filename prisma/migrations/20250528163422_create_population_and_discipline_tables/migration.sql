@@ -1,7 +1,4 @@
 -- CreateEnum
-CREATE TYPE "DataType" AS ENUM ('POPULATION', 'DEMOGRAPHICS', 'ACHIEVEMENT', 'DISCIPLINE', 'OTHER');
-
--- CreateEnum
 CREATE TYPE "DocType" AS ENUM ('PDF', 'CSV');
 
 -- CreateTable
@@ -78,22 +75,6 @@ CREATE TABLE "PopulationSnapshot" (
     CONSTRAINT "PopulationSnapshot_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "DisciplineData" (
-    "id" SERIAL NOT NULL,
-    "disciplineId" INTEGER NOT NULL,
-    "subGroupId" INTEGER NOT NULL,
-    "schoolId" INTEGER NOT NULL,
-    "yearId" INTEGER NOT NULL,
-    "suspensionCount" INTEGER,
-    "subGroupCount" INTEGER,
-    "percentage" DOUBLE PRECISION,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "DisciplineData_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "DataSource_url_key" ON "DataSource"("url");
 
@@ -105,9 +86,6 @@ CREATE UNIQUE INDEX "SubgroupPopulation_schoolId_yearId_subgroupId_key" ON "Subg
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PopulationSnapshot_schoolId_yearId_key" ON "PopulationSnapshot"("schoolId", "yearId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "DisciplineData_schoolId_yearId_disciplineId_subGroupId_key" ON "DisciplineData"("schoolId", "yearId", "disciplineId", "subGroupId");
 
 -- AddForeignKey
 ALTER TABLE "DataSource" ADD CONSTRAINT "DataSource_yearId_fkey" FOREIGN KEY ("yearId") REFERENCES "Year"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -144,15 +122,3 @@ ALTER TABLE "PopulationSnapshot" ADD CONSTRAINT "PopulationSnapshot_yearId_fkey"
 
 -- AddForeignKey
 ALTER TABLE "PopulationSnapshot" ADD CONSTRAINT "PopulationSnapshot_pdfSourceId_fkey" FOREIGN KEY ("pdfSourceId") REFERENCES "DataSource"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DisciplineData" ADD CONSTRAINT "DisciplineData_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DisciplineData" ADD CONSTRAINT "DisciplineData_yearId_fkey" FOREIGN KEY ("yearId") REFERENCES "Year"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DisciplineData" ADD CONSTRAINT "DisciplineData_disciplineId_fkey" FOREIGN KEY ("disciplineId") REFERENCES "Discipline"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DisciplineData" ADD CONSTRAINT "DisciplineData_subGroupId_fkey" FOREIGN KEY ("subGroupId") REFERENCES "SubGroup"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

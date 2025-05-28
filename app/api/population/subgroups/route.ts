@@ -1,5 +1,5 @@
 import { withApiErrorHandling } from '@/errors/handleApiError';
-import { PopulationService } from '@/services/populationService';
+import { PopulationService } from '@/services/populationService/populationService';
 import { NextResponse } from 'next/server';
 
 export const POST = withApiErrorHandling(async (req: Request) => {

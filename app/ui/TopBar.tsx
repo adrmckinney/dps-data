@@ -1,0 +1,397 @@
+'use client';
+
+import { FormChangeType } from '@/types/formChangeTypes';
+import {
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+    Popover,
+    PopoverButton,
+    PopoverGroup,
+    PopoverPanel,
+} from '@headlessui/react';
+import { useState } from 'react';
+import { Icon } from '../assets/icons';
+import { useReferenceContext } from '../context/referenceContext';
+import { applySubgroup, DataTypeEnums } from '../enums/DataTypeEnums';
+import { UserNavigation } from './Main';
+import TopBarMobile from './TopBarMobile';
+
+type Props = {
+    userNavigation: UserNavigation[];
+    setSidebarOpen: (state: boolean) => void;
+};
+
+export type Filter = {
+    id: string;
+    key: string;
+    name: string;
+    options: FilterOptions[];
+};
+
+type FilterOptions = {
+    value: number;
+    label: string;
+    checked: boolean;
+    onCheck: (e: FormChangeType) => void;
+    show: boolean;
+};
+
+type SortOption = {
+    name: string;
+    href: string;
+    current: boolean;
+};
+
+type ActiveFilter = {
+    value: string;
+    label: string;
+};
+
+const sortOptions: SortOption[] = [
+    { name: 'Most Popular', href: '#', current: true },
+    { name: 'Best Rating', href: '#', current: false },
+    { name: 'Newest', href: '#', current: false },
+];
+
+type FilterKeys = 'categories' | 'years' | 'schools' | 'subgroups' | 'grades';
+type FilterSelection = Map<FilterKeys, Set<number | string>>;
+
+const initialFilterSelectionMap: FilterSelection = new Map([
+    ['categories', new Set()],
+    ['years', new Set()],
+    ['schools', new Set()],
+    ['subgroups', new Set()],
+    ['grades', new Set()],
+]);
+
+const TopBar = ({}: Props) => {
+    const [open, setOpen] = useState(false);
+    const { state } = useReferenceContext();
+    const [filterSelectionsMap, setFilterSelectionsMap] =
+        useState<FilterSelection>(initialFilterSelectionMap);
+    const activeFilters: ActiveFilter[] = [{ value: 'objects', label: 'Objects' }];
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const handleUpdateFilterSelectMap = (name: string, value: number) => {
+        const key = name as FilterKeys;
+        setFilterSelectionsMap(prevMap => {
+            const newMap = new Map(prevMap);
+            const currentSet = new Set(newMap.get(key));
+
+            if (currentSet.has(value)) {
+                currentSet.delete(value);
+            } else {
+                currentSet.add(value);
+            }
+
+            newMap.set(key, currentSet);
+
+            return newMap;
+        });
+    };
+
+    const handleChecked = (e: FormChangeType) => {
+        const { name, value } = e.target;
+        handleUpdateFilterSelectMap(name, +value);
+    };
+
+    console.log('filterSelectionsMap', filterSelectionsMap);
+    const selectedSchoolIds = filterSelectionsMap.get('schools');
+    const selectedCategoryIds = filterSelectionsMap.get('categories');
+
+    const selectedLevelIds = state.schools
+        .filter(s => selectedSchoolIds?.has(s.id))
+        .map(s => s.levelId);
+    const filters: Filter[] = [
+        {
+            id: 'category', // determines the api
+            key: 'categories',
+            name: 'Category',
+            options: Object.values(DataTypeEnums)
+                .filter(dt => dt.label !== 'Other')
+                .map(dt => {
+                    return {
+                        value: dt.id,
+                        label: dt.label,
+                        checked: filterSelectionsMap.get('categories')?.has(dt.id) || false,
+                        onCheck: handleChecked,
+                        show: true,
+                    };
+                }),
+        },
+        {
+            id: 'year',
+            key: 'years',
+            name: 'Year',
+            options: state.years.map(y => {
+                return {
+                    value: y.id,
+                    label: y.schoolYear,
+                    checked: filterSelectionsMap.get('years')?.has(y.id) || false,
+                    onCheck: handleChecked,
+                    show: true,
+                };
+            }),
+        },
+        {
+            id: 'school',
+            key: 'schools',
+            name: 'School',
+            options: state.schools.map(s => {
+                return {
+                    value: s.id,
+                    label: s.name,
+                    checked: filterSelectionsMap.get('schools')?.has(s.id) || false,
+                    onCheck: handleChecked,
+                    show: true,
+                };
+            }),
+        },
+        {
+            id: 'subgroups',
+            key: 'subgroups',
+            name: 'Subgroups',
+            options: state.subgroups.map(group => {
+                return {
+                    value: group.id,
+                    label: group.name,
+                    checked: filterSelectionsMap.get('subgroups')?.has(group.id) || false,
+                    onCheck: handleChecked,
+                    show: applySubgroup(group),
+                };
+            }),
+        },
+        {
+            id: 'grades',
+            key: 'grades',
+            name: 'Grades',
+            options: state.grades.map(grade => {
+                return {
+                    value: grade.id,
+                    label: grade.name,
+                    checked: filterSelectionsMap.get('grades')?.has(grade.id) || false,
+                    onCheck: handleChecked,
+                    show:
+                        selectedSchoolIds?.size === 0
+                            ? true
+                            : selectedLevelIds.includes(grade.levelId),
+                };
+            }),
+        },
+    ];
+
+    return (
+        <div className="bg-white">
+            {/* Mobile filter dialog */}
+            <TopBarMobile filters={filters} open={open} handleClose={handleClose} />
+
+            <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                    Durham Public Schools Data Graphics
+                </h1>
+                <p className="mt-4 max-w-xl text-sm text-gray-700">
+                    Our thoughtfully designed workspace objects are crafted in limited runs. Improve
+                    your productivity and organization with these sale items before we run out.
+                </p>
+            </div>
+
+            {/* Filters */}
+            <section aria-labelledby="filter-heading">
+                <h2 id="filter-heading" className="sr-only">
+                    Filters
+                </h2>
+
+                <div className="border-b border-gray-200 bg-white pb-4">
+                    <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                        <Menu as="div" className="relative inline-block text-left">
+                            <div>
+                                <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+                                    Sort
+                                    <Icon.chevronDown
+                                        aria-hidden="true"
+                                        className="-mr-1 ml-1 size-5 shrink-0 text-gray-400 group-hover:text-gray-500"
+                                    />
+                                </MenuButton>
+                            </div>
+
+                            <MenuItems
+                                transition
+                                className="absolute left-0 z-10 mt-2 w-40 origin-top-left rounded-md bg-white shadow-2xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+                            >
+                                <div className="py-1">
+                                    {sortOptions.map(option => (
+                                        <MenuItem key={option.name}>
+                                            <a
+                                                href={option.href}
+                                                className={[
+                                                    option.current
+                                                        ? 'font-medium text-gray-900'
+                                                        : 'text-gray-500',
+                                                    'block px-4 py-2 text-sm data-focus:bg-gray-100 data-focus:outline-hidden',
+                                                ].join(' ')}
+                                            >
+                                                {option.name}
+                                            </a>
+                                        </MenuItem>
+                                    ))}
+                                </div>
+                            </MenuItems>
+                        </Menu>
+
+                        <button
+                            type="button"
+                            onClick={() => setOpen(true)}
+                            className="inline-block text-sm font-medium text-gray-700 hover:text-gray-900 sm:hidden"
+                        >
+                            Filters
+                        </button>
+
+                        <div className="hidden sm:block">
+                            <div className="flow-root">
+                                <PopoverGroup className="-mx-4 flex items-center divide-x divide-gray-200">
+                                    {filters.map(section => (
+                                        <Popover
+                                            key={section.name}
+                                            className="relative inline-block px-4 text-left"
+                                        >
+                                            <PopoverButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+                                                <span>{section.name}</span>
+                                                <span className="ml-1.5 rounded-sm bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-700 tabular-nums">
+                                                    {
+                                                        filterSelectionsMap.get(
+                                                            section.key as FilterKeys
+                                                        )?.size
+                                                    }
+                                                </span>
+                                                <Icon.chevronDown
+                                                    aria-hidden="true"
+                                                    className="-mr-1 ml-1 size-5 shrink-0 text-gray-400 group-hover:text-gray-500"
+                                                />
+                                            </PopoverButton>
+
+                                            <PopoverPanel
+                                                transition
+                                                className="absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+                                            >
+                                                <form className="space-y-4">
+                                                    {section.options
+                                                        .filter(o => o.show)
+                                                        .map((option, optionIdx) => (
+                                                            <div
+                                                                key={option.value}
+                                                                className="flex gap-3"
+                                                            >
+                                                                <div className="flex h-5 shrink-0 items-center">
+                                                                    <div className="group grid size-4 grid-cols-1">
+                                                                        <input
+                                                                            defaultValue={
+                                                                                option.value
+                                                                            }
+                                                                            defaultChecked={
+                                                                                option.checked
+                                                                            }
+                                                                            id={`filter-${section.id}-${optionIdx}`}
+                                                                            name={section.key}
+                                                                            type="checkbox"
+                                                                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                                                                            onChange={
+                                                                                option.onCheck
+                                                                            }
+                                                                        />
+                                                                        <svg
+                                                                            fill="none"
+                                                                            viewBox="0 0 14 14"
+                                                                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
+                                                                        >
+                                                                            <path
+                                                                                d="M3 8L6 11L11 3.5"
+                                                                                strokeWidth={2}
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                className="opacity-0 group-has-checked:opacity-100"
+                                                                            />
+                                                                            <path
+                                                                                d="M3 7H11"
+                                                                                strokeWidth={2}
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                className="opacity-0 group-has-indeterminate:opacity-100"
+                                                                            />
+                                                                        </svg>
+                                                                    </div>
+                                                                </div>
+                                                                <label
+                                                                    htmlFor={`filter-${section.id}-${optionIdx}`}
+                                                                    className="pr-6 text-sm font-medium whitespace-nowrap text-gray-900"
+                                                                >
+                                                                    {option.label}
+                                                                </label>
+                                                            </div>
+                                                        ))}
+                                                </form>
+                                            </PopoverPanel>
+                                        </Popover>
+                                    ))}
+                                </PopoverGroup>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Active filters */}
+                <div className="bg-gray-100">
+                    <div className="mx-auto max-w-7xl px-4 py-3 sm:flex sm:items-center sm:px-6 lg:px-8">
+                        <h3 className="text-sm font-medium text-gray-500">
+                            Filters
+                            <span className="sr-only">, active</span>
+                        </h3>
+
+                        <div
+                            aria-hidden="true"
+                            className="hidden h-5 w-px bg-gray-300 sm:ml-4 sm:block"
+                        />
+
+                        <div className="mt-2 sm:mt-0 sm:ml-4">
+                            <div className="-m-1 flex flex-wrap items-center">
+                                {activeFilters.map(activeFilter => (
+                                    <span
+                                        key={activeFilter.value}
+                                        className="m-1 inline-flex items-center rounded-full border border-gray-200 bg-white py-1.5 pr-2 pl-3 text-sm font-medium text-gray-900"
+                                    >
+                                        <span>{activeFilter.label}</span>
+                                        <button
+                                            type="button"
+                                            className="ml-1 inline-flex size-4 shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-500"
+                                        >
+                                            <span className="sr-only">
+                                                Remove filter for {activeFilter.label}
+                                            </span>
+                                            <svg
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 8 8"
+                                                className="size-2"
+                                            >
+                                                <path
+                                                    d="M1 1l6 6m0-6L1 7"
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+};
+
+export default TopBar;

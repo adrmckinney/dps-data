@@ -1,6 +1,6 @@
-import { NotFoundError } from '@/errors/AppError.ts';
 import type { DataSource, School, Year } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { NotFoundError } from '../../../errors/AppError.ts';
 import type { RawPopulationRow } from '../../../types/population.ts';
 
 export const snapShotParser = (
@@ -10,14 +10,16 @@ export const snapShotParser = (
     schoolMap: Map<number, School>
 ): Prisma.PopulationSnapshotCreateManyInput[] => {
     const preparedSnapshotData: Prisma.PopulationSnapshotCreateManyInput[] = [];
-
     for (const row of rows) {
-        if (!row.Code) {
+        // In 2015-2016 PDF, the code is Site code for one table and Site Code for another
+        const schoolCode = row.Code ?? (row as Record<string, string | undefined>)['Site code'];
+
+        if (!schoolCode) {
             // That last row in the table is Totals -> Ignore
             continue;
         }
 
-        const school = schoolMap.get(+row.Code);
+        const school = schoolMap.get(+schoolCode);
         if (!school) {
             throw new NotFoundError(`No school record found with school code ${row.Code}`);
         }

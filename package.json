@@ -18,6 +18,8 @@
     "seed": "ts-node --esm prisma/seed.ts"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.8.1",
     "dotenv": "^16.5.0",
     "next": "15.3.2",

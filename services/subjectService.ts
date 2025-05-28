@@ -1,0 +1,28 @@
+import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError';
+import { SubjectRepo } from '@/repos/subjectRepo';
+import { tryCatch } from '@/utils/tryCatch';
+
+export const SubjectService = {
+    async getSubjects() {
+        const response = await tryCatch({
+            tryFn: async () => {
+                return SubjectRepo.getAllSubjects();
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in SubjectService getSubjects',
+                    error
+                );
+            },
+        });
+
+        if (response.length === 0) {
+            throw new NotFoundError('No subjects found. DB has likely not been seeded.');
+        }
+
+        return response;
+    },
+};

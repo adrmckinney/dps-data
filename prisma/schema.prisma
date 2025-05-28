@@ -28,7 +28,6 @@ model Year {
   GradePopulation    GradePopulation[]
   SubgroupPopulation SubgroupPopulation[]
   PopulationSnapshot PopulationSnapshot[]
-  DisciplineData     DisciplineData[]
 }
 
 model Grade {
@@ -67,16 +66,14 @@ model School {
   GradePopulation    GradePopulation[]
   SubgroupPopulation SubgroupPopulation[]
   PopulationSnapshot PopulationSnapshot[]
-  DisciplineData     DisciplineData[]
 }
 
 model Discipline {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  abbreviation   String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @default(now()) @updatedAt
-  DisciplineData DisciplineData[]
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  abbreviation String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
 }
 
 model Subject {
@@ -97,18 +94,18 @@ model SubGroupType {
 }
 
 model SubGroup {
-  id           Int    @id @default(autoincrement())
-  name         String @unique // e.g., "Black Male", "All Male", "Students with Disabilities"
-  abbreviation String @unique // e.g., "BM", "M", "SWD"
-  typeId       Int
-  key          String @unique
-  secondaryKey String @unique
+  id                    Int          @id @default(autoincrement())
+  name                  String       @unique // e.g., "Black Male", "All Male", "Students with Disabilities"
+  abbreviation          String       @unique // e.g., "BM", "M", "SWD"
+  typeId                Int
+  key                   String       @unique
+  secondaryKey          String       @unique
+  type                  SubGroupType @relation(fields: [typeId], references: [id])
+  availableForDataTypes DataType[]
 
-  type               SubGroupType         @relation(fields: [typeId], references: [id])
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   SubgroupPopulation SubgroupPopulation[]
-  DisciplineData     DisciplineData[]
 }
 
 // ************************************************************
@@ -116,9 +113,10 @@ model SubGroup {
 // ************************************************************
 enum DataType {
   POPULATION
-  DEMOGRAPHICS
-  ACHIEVEMENT
-  DISCIPLINE
+  ACHIEVEMENT_OVERALL
+  ACHIEVEMENT_SUBGROUPS
+  DISCIPLINE_OVERALL
+  DISCIPLINE_SUBGROUPS
   OTHER
 }
 
@@ -220,22 +218,22 @@ model PopulationSnapshot {
   @@unique([schoolId, yearId])
 }
 
-model DisciplineData {
-  id              Int    @id @default(autoincrement())
-  disciplineId    Int
-  subGroupId      Int
-  schoolId        Int
-  yearId          Int
-  suspensionCount Int?
-  subGroupCount   Int?
-  percentage      Float?
+// model DisciplineData {
+//   id              Int    @id @default(autoincrement())
+//   disciplineId    Int
+//   subGroupId      Int
+//   schoolId        Int
+//   yearId          Int
+//   suspensionCount Int?
+//   subGroupCount   Int?
+//   percentage      Float?
 
-  school     School     @relation(fields: [schoolId], references: [id])
-  year       Year       @relation(fields: [yearId], references: [id])
-  discipline Discipline @relation(fields: [disciplineId], references: [id])
-  subGroup   SubGroup   @relation(fields: [subGroupId], references: [id])
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @default(now()) @updatedAt
+//   school     School     @relation(fields: [schoolId], references: [id])
+//   year       Year       @relation(fields: [yearId], references: [id])
+//   discipline Discipline @relation(fields: [disciplineId], references: [id])
+//   subGroup   SubGroup   @relation(fields: [subGroupId], references: [id])
+//   createdAt  DateTime   @default(now())
+//   updatedAt  DateTime   @default(now()) @updatedAt
 
-  @@unique([schoolId, yearId, disciplineId, subGroupId])
-}
+//   @@unique([schoolId, yearId, disciplineId, subGroupId])
+// }

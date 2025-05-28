@@ -1,6 +1,6 @@
-import { DBError } from '@/errors/AppError.ts';
-import { getOriginalErrorMessage } from '@/errors/errorHelpers.ts';
 import type { SubGroup } from '@prisma/client';
+import { DBError } from '../errors/AppError.ts';
+import { getOriginalErrorMessage } from '../errors/errorHelpers.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const SubgroupRepo = {

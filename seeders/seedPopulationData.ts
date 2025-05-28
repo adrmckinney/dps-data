@@ -1,6 +1,6 @@
 import { runExtractScript } from '../lib/runPython.ts';
 import { population } from '../scripts/pdf_links.ts';
-import { PopulationService } from '../services/populationService/index.ts';
+import { PopulationService } from '../services/populationService/populationService.ts';
 import type { RawPopulationData } from '../types/population.ts';
 
 async function seedPopulationData() {

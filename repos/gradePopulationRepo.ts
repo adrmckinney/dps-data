@@ -35,4 +35,14 @@ export const GradePopulationRepo = {
             };
         }
     },
+
+    async getFilteredGradePopulation(params: {
+        where: Prisma.GradePopulationWhereInput;
+        orderBy?: Prisma.GradePopulationOrderByWithRelationInput[];
+    }) {
+        return prisma.gradePopulation.findMany({
+            where: params.where,
+            orderBy: params.orderBy,
+        });
+    },
 };

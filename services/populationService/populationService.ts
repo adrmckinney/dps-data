@@ -1,9 +1,14 @@
-import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError.ts';
-import { buildSortOrder } from '@/filters/Filter.ts';
-import { buildSubgroupPopulationWhereClause } from '@/filters/subgroupPopulationFilterBuilder.ts';
-import { PopulationFilterPayload } from '@/types/queryFilters.ts';
 import type { DataSource, School, Year } from '@prisma/client';
 import { DataType, DocType, Prisma } from '@prisma/client';
+import { AppError, InternalServerError, NotFoundError } from '../../errors/AppError.ts';
+import {
+    buildGradePopulationSortOrder,
+    buildGradePopulationWhereClause,
+} from '../../filters/gradePopulationFilterBuilder.ts';
+import {
+    buildSubgroupPopulationSortOrder,
+    buildSubgroupPopulationWhereClause,
+} from '../../filters/subgroupPopulationFilterBuilder.ts';
 import { DataSourceRepo } from '../../repos/dataSourceRepo.ts';
 import { GradePopulationRepo } from '../../repos/gradePopulationRepo.ts';
 import { GradeRepo } from '../../repos/gradeRepo.ts';
@@ -13,6 +18,7 @@ import { SubgroupPopulationRepo } from '../../repos/subgroupPopulationRepo.ts';
 import { SubgroupRepo } from '../../repos/subgroupRepo.ts';
 import { YearRepo } from '../../repos/yearRepo.ts';
 import type { RawPopulationData } from '../../types/population.ts';
+import type { QueryFilterPayload } from '../../types/queryFilters.ts';
 import { tryCatch, tryCatchSync } from '../../utils/tryCatch.ts';
 import { byGradeParser } from './parsers/byGradeParser.ts';
 import { bySubgroupParser } from './parsers/bySubgroupParser.ts';
@@ -24,44 +30,17 @@ export const PopulationService = {
         return;
     },
 
-    async getPopulationSubgroups() {
-        const response = await tryCatch({
-            tryFn: async () => {
-                return SubgroupRepo.getAllSubgroups();
-            },
-            catchFn: error => {
-                if (error instanceof AppError) {
-                    throw error;
-                }
-                throw new InternalServerError(
-                    'Unexpected error in PopulationService getSubgroups',
-                    error
-                );
-            },
-        });
-
-        return response;
-    },
-
-    async getFilteredSubgroupPopulation(payload: PopulationFilterPayload) {
+    async getFilteredSubgroupPopulation(payload: QueryFilterPayload) {
         const where = buildSubgroupPopulationWhereClause(payload.filters ?? {});
-        const orderBy = buildSortOrder<Prisma.SubgroupPopulationOrderByWithRelationInput>(
-            payload.sort
-        );
+        const orderBy = buildSubgroupPopulationSortOrder(payload.sort);
         return SubgroupPopulationRepo.getFilteredSubgroupPopulation({ where, orderBy });
     },
 
-    // async getFilteredSubgroupPopulation(query: URLSearchParams) {
-    //     const filterParams: Record<string, string[]> = {};
-    //     for (const key of query.keys()) {
-    //         const allValues = query.getAll(key);
-    //         if (allValues.length > 0) {
-    //             filterParams[key] = allValues;
-    //         }
-    //     }
-
-    //     return SubgroupPopulationRepo.getFilteredSubgroupPopulation(filterParams);
-    // },
+    async getFilteredGradePopulation(payload: QueryFilterPayload) {
+        const where = buildGradePopulationWhereClause(payload.filters ?? {});
+        const orderBy = buildGradePopulationSortOrder(payload.sort);
+        return GradePopulationRepo.getFilteredGradePopulation({ where, orderBy });
+    },
 
     async processPopulationPdf(pdfRecords: RawPopulationData[], linkData: { url: string }) {
         const date = pdfRecords[0].metadata.date.split(' ')[0];

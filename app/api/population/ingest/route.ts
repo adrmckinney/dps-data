@@ -1,5 +1,5 @@
 import { runExtractScript } from '@/lib/runPython';
-import { PopulationService } from '@/services/populationService';
+import { PopulationService } from '@/services/populationService/populationService';
 import { RawPopulationData } from '@/types/population';
 import { NextRequest, NextResponse } from 'next/server';
 

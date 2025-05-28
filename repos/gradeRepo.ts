@@ -1,4 +1,6 @@
 import type { Grade } from '@prisma/client';
+import { DBError } from '../errors/AppError.ts';
+import { getOriginalErrorMessage } from '../errors/errorHelpers.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const GradeRepo = {
@@ -6,6 +8,11 @@ export const GradeRepo = {
         return await prisma.grade.findUnique({ where: { abbreviation: abbr } });
     },
     async getAllGrades(): Promise<Grade[]> {
-        return prisma.grade.findMany();
+        try {
+            return prisma.grade.findMany();
+        } catch (error: unknown) {
+            const originalMsg = getOriginalErrorMessage(error);
+            throw new DBError('DB error fetching all grades', originalMsg);
+        }
     },
 };

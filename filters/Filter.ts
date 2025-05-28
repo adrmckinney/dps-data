@@ -1,12 +1,15 @@
-import { FilterCondition } from '@/types/queryFilters';
+import type { FilterCondition, OrderDirection } from '../types/queryFilters.ts';
 
-export function buildClause(condition: FilterCondition) {
+function buildClause(condition: FilterCondition) {
+    if (condition.operator === 'equals') {
+        return condition.value;
+    }
     return {
         [condition.operator]: condition.value,
     };
 }
 
-export function setNested(obj: Record<string, unknown>, keys: string[], clause: object): void {
+function setNested(obj: Record<string, unknown>, keys: string[], clause: unknown): void {
     const lastKey = keys.pop();
     if (!lastKey) return;
 
@@ -23,7 +26,7 @@ export function setNested(obj: Record<string, unknown>, keys: string[], clause: 
 }
 
 /**
- * Builds a Prisma-compliant where clause with support for AND/OR logic.
+ * Builds a Prisma-compliant where clause.
  */
 export function buildWhereClause<TWhereInput extends Record<string, unknown>>(
     filters: Record<string, FilterCondition>
@@ -44,10 +47,10 @@ export function buildWhereClause<TWhereInput extends Record<string, unknown>>(
  * Builds a Prisma-compliant sort clause, supporting nested fields and a fallback sort.
  */
 export function buildSortOrder<TOrderByInput extends Record<string, unknown>>(
-    sort?: { field: string; direction: 'asc' | 'desc' },
-    defaultSort?: { field: string; direction: 'asc' | 'desc' }
+    sort?: { field: string; direction: OrderDirection },
+    defaultSort?: { field: string; direction: OrderDirection }
 ): TOrderByInput[] | undefined {
-    const sortToNested = (field: string, direction: 'asc' | 'desc'): TOrderByInput => {
+    const sortToNested = (field: string, direction: OrderDirection): TOrderByInput => {
         const keys = field.split('.');
         const result = keys.reverse().reduce<Record<string, unknown>>((acc, key, idx) => {
             return idx === 0 ? { [key]: direction } : { [key]: acc };

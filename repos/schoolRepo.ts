@@ -1,6 +1,6 @@
 import type { School } from '@prisma/client';
-
-import { DBError } from '@/errors/AppError.ts';
+import { DBError } from '../errors/AppError.ts';
+import { getOriginalErrorMessage } from '../errors/errorHelpers.ts';
 import { prisma } from '../lib/prisma.ts';
 
 export const SchoolRepo = {
@@ -16,6 +16,11 @@ export const SchoolRepo = {
         }
     },
     async getAllSchools(): Promise<School[]> {
-        return prisma.school.findMany();
+        try {
+            return prisma.school.findMany();
+        } catch (error: unknown) {
+            const originalMsg = getOriginalErrorMessage(error);
+            throw new DBError('DB error fetching all schools', originalMsg);
+        }
     },
 };
