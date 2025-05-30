@@ -1,6 +1,8 @@
 'use client';
 
 import { FormChangeType } from '@/types/formChangeTypes';
+import { FilterPayload } from '@/types/queryFilters';
+import { tryCatch } from '@/utils/tryCatch';
 import {
     Menu,
     MenuButton,
@@ -14,7 +16,11 @@ import {
 import { useState } from 'react';
 import { Icon } from '../assets/icons';
 import { useReferenceContext } from '../context/referenceContext';
-import { applySubgroup, DataTypeEnums } from '../enums/DataTypeEnums';
+import { applySubgroup, DataTypeEnums, getKeysFromCategoryIds } from '../enums/DataTypeEnums';
+import { PopulationRouteService } from '../services/populationRouteService';
+import CancelButton from '../sharedComponents/buttons/CancelButton';
+import PrimaryButton from '../sharedComponents/buttons/PrimaryButton';
+import { getDataSetApiFns, mapFilterMapToFilterPayload } from '../utils/apiFilterUtils';
 import { UserNavigation } from './Main';
 import TopBarMobile from './TopBarMobile';
 
@@ -45,7 +51,8 @@ type SortOption = {
 };
 
 type ActiveFilter = {
-    value: string;
+    id: number;
+    title: string;
     label: string;
 };
 
@@ -55,37 +62,136 @@ const sortOptions: SortOption[] = [
     { name: 'Newest', href: '#', current: false },
 ];
 
-type FilterKeys = 'categories' | 'years' | 'schools' | 'subgroups' | 'grades';
-type FilterSelection = Map<FilterKeys, Set<number | string>>;
+type FilterKeys = 'dataTypes' | 'years' | 'schools' | 'subgroups' | 'grades';
+export type FilterSelection = Map<FilterKeys, Set<number>>;
 
 const initialFilterSelectionMap: FilterSelection = new Map([
-    ['categories', new Set()],
+    ['dataTypes', new Set()],
     ['years', new Set()],
     ['schools', new Set()],
     ['subgroups', new Set()],
     ['grades', new Set()],
 ]);
 
+const initialNotify: Record<FilterKeys, boolean> = {
+    dataTypes: false,
+    years: false,
+    schools: false,
+    subgroups: false,
+    grades: false,
+};
+
 const TopBar = ({}: Props) => {
     const [open, setOpen] = useState(false);
     const { state } = useReferenceContext();
     const [filterSelectionsMap, setFilterSelectionsMap] =
         useState<FilterSelection>(initialFilterSelectionMap);
-    const activeFilters: ActiveFilter[] = [{ value: 'objects', label: 'Objects' }];
+    const activeFilters: ActiveFilter[] = [];
     const handleClose = () => {
         setOpen(false);
+    };
+    const [notify, setNotify] = useState(initialNotify);
+    const selectedSchoolIds = filterSelectionsMap.get('schools');
+    const selectedCategoryIds = filterSelectionsMap.get('dataTypes');
+    const selectedSubgroupIds = filterSelectionsMap.get('subgroups') || new Set();
+    const selectedGradeIds = filterSelectionsMap.get('grades') || new Set();
+
+    const handleNotify = (filterType: FilterKeys, value: boolean, timeOutValue: number = 0) => {
+        if (timeOutValue > 0) {
+            setTimeout(() => {
+                setNotify(prev => ({
+                    ...prev,
+                    [filterType]: value,
+                }));
+            }, timeOutValue);
+        } else {
+            setNotify(prev => ({
+                ...prev,
+                [filterType]: value,
+            }));
+        }
+    };
+
+    const filterInRangeSubgroupsByDataSets = (
+        newMap: Map<FilterKeys, Set<number>>,
+        selectedDataSetIds: Set<number>
+    ): void => {
+        const selectedCategoryKeys = getKeysFromCategoryIds(selectedDataSetIds);
+        const selectedSubgroups = state.subgroups.filter(g => selectedSubgroupIds.has(g.id));
+
+        selectedSubgroups?.forEach(group => {
+            const subgroupIsAvailable = group.availableForDataTypes.some(key =>
+                selectedCategoryKeys.includes(key)
+            );
+
+            if (!subgroupIsAvailable) {
+                handleNotify('subgroups', true);
+                newMap.get('subgroups')?.delete(group.id);
+                handleNotify('subgroups', false, 300);
+            }
+        });
     };
 
     const handleUpdateFilterSelectMap = (name: string, value: number) => {
         const key = name as FilterKeys;
+
         setFilterSelectionsMap(prevMap => {
             const newMap = new Map(prevMap);
             const currentSet = new Set(newMap.get(key));
 
             if (currentSet.has(value)) {
                 currentSet.delete(value);
+
+                // Remove pre-selected subgroups that were in range for the dataType that was deselected
+                // Must be > 1 (not 0) because it is checking if the last one is being removed
+                if (key === 'dataTypes' && selectedSubgroupIds.size > 1) {
+                    const allSelectedDataSetIds = new Set(selectedCategoryIds);
+                    allSelectedDataSetIds.delete(value);
+                    filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
+                }
+
+                // Remove pre-selected grades that were in range for the school that was deselected
+                if (key === 'schools' && selectedGradeIds?.size > 1) {
+                    const targetLevelId = state.schools.filter(s => s.id === value)[0]['levelId'];
+
+                    const selectedGrades = state.grades.filter(g => selectedGradeIds.has(g.id));
+                    selectedGrades.forEach(g => {
+                        if (g.levelId === targetLevelId) {
+                            handleNotify('grades', true);
+                            newMap.get('grades')?.delete(g.id);
+                            handleNotify('grades', false, 300);
+                        }
+                    });
+                }
             } else {
                 currentSet.add(value);
+
+                // Remove any pre-selected subgroups that are no longer in range for the selected dataType
+                if (key === 'dataTypes' && selectedSubgroupIds?.size > 0) {
+                    const allSelectedDataSetIds = new Set(selectedCategoryIds);
+                    allSelectedDataSetIds.add(value);
+                    filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
+                }
+
+                // Remove any pre-selected grades that are no longer in range for the selected school
+                if (key === 'schools' && selectedGradeIds?.size > 0) {
+                    const allSelectedSchoolIds = new Set(selectedSchoolIds);
+                    allSelectedSchoolIds.add(value);
+                    const selectedSchoolLevelIds = new Set(
+                        state.schools
+                            .filter(s => allSelectedSchoolIds?.has(s.id))
+                            .map(s => s.levelId)
+                    );
+
+                    const selectedGrades = state.grades.filter(g => selectedGradeIds.has(g.id));
+                    selectedGrades.forEach(g => {
+                        if (!selectedSchoolLevelIds.has(g.levelId)) {
+                            handleNotify('grades', true);
+                            newMap.get('grades')?.delete(g.id);
+                            handleNotify('grades', false, 300);
+                        }
+                    });
+                }
             }
 
             newMap.set(key, currentSet);
@@ -100,24 +206,63 @@ const TopBar = ({}: Props) => {
     };
 
     console.log('filterSelectionsMap', filterSelectionsMap);
-    const selectedSchoolIds = filterSelectionsMap.get('schools');
-    const selectedCategoryIds = filterSelectionsMap.get('categories');
+
+    const handleFilterSubmit = async () => {
+        const payloadFilters: { filters: Partial<FilterPayload['filters']> } =
+            mapFilterMapToFilterPayload(filterSelectionsMap);
+        if (!payloadFilters) return;
+        console.log('payloadFilters', payloadFilters);
+
+        const dataTypes = filterSelectionsMap.get('dataTypes');
+        if (!dataTypes) return;
+
+        const dataTypeFns = getDataSetApiFns(dataTypes);
+        const popFn = dataTypeFns.get('subgroupPopulation');
+        if (!popFn) return;
+
+        const res = await tryCatch({
+            tryFn: async () => {
+                // return await popFn(payloadFilters);
+                return await PopulationRouteService.getSubgroupPopulation(
+                    payloadFilters
+                    //     {
+                    //     filters: {
+                    //         subgroupId: {
+                    //             operator: 'in',
+                    //             value: [12],
+                    //         },
+                    //         'school.levelId': {
+                    //             operator: 'equals',
+                    //             value: 3,
+                    //         },
+                    //     },
+                    // }
+                );
+            },
+            catchFn: (error: unknown) => {
+                console.error('Error:', error);
+                throw error;
+            },
+        });
+
+        console.log('res', res);
+    };
 
     const selectedLevelIds = state.schools
         .filter(s => selectedSchoolIds?.has(s.id))
         .map(s => s.levelId);
     const filters: Filter[] = [
         {
-            id: 'category', // determines the api
-            key: 'categories',
-            name: 'Category',
+            id: 'dataTypes', // determines the api
+            key: 'dataTypes',
+            name: 'Data Sets',
             options: Object.values(DataTypeEnums)
                 .filter(dt => dt.label !== 'Other')
                 .map(dt => {
                     return {
                         value: dt.id,
                         label: dt.label,
-                        checked: filterSelectionsMap.get('categories')?.has(dt.id) || false,
+                        checked: filterSelectionsMap.get('dataTypes')?.has(dt.id) || false,
                         onCheck: handleChecked,
                         show: true,
                     };
@@ -130,7 +275,7 @@ const TopBar = ({}: Props) => {
             options: state.years.map(y => {
                 return {
                     value: y.id,
-                    label: y.schoolYear,
+                    label: y.schoolYear.replace('-', ' - '),
                     checked: filterSelectionsMap.get('years')?.has(y.id) || false,
                     onCheck: handleChecked,
                     show: true,
@@ -161,7 +306,7 @@ const TopBar = ({}: Props) => {
                     label: group.name,
                     checked: filterSelectionsMap.get('subgroups')?.has(group.id) || false,
                     onCheck: handleChecked,
-                    show: applySubgroup(group),
+                    show: applySubgroup(group, selectedCategoryIds),
                 };
             }),
         },
@@ -184,19 +329,57 @@ const TopBar = ({}: Props) => {
         },
     ];
 
+    for (const [key, setValues] of filterSelectionsMap.entries()) {
+        for (const value of setValues) {
+            let label = '';
+            switch (key) {
+                case 'dataTypes':
+                    label = Object.values(DataTypeEnums).find(dt => dt.id === value)?.label || '';
+                    break;
+                case 'schools':
+                    label = state.schools.find(s => s.id === value)?.abbreviation || '';
+                    break;
+                case 'grades':
+                    label = state.grades.find(g => g.id === value)?.name || '';
+                    break;
+                case 'subgroups':
+                    label = state.subgroups.find(sg => sg.id === value)?.name || '';
+                    break;
+                case 'years':
+                    label =
+                        state.years.find(y => y.id === value)?.schoolYear.replace('-', ' - ') || '';
+                    break;
+            }
+            activeFilters.push({ id: value, title: key, label });
+        }
+    }
+
     return (
         <div className="bg-white">
             {/* Mobile filter dialog */}
             <TopBarMobile filters={filters} open={open} handleClose={handleClose} />
 
-            <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                    Durham Public Schools Data Graphics
-                </h1>
-                <p className="mt-4 max-w-xl text-sm text-gray-700">
-                    Our thoughtfully designed workspace objects are crafted in limited runs. Improve
-                    your productivity and organization with these sale items before we run out.
-                </p>
+            <div className="flex justify-between mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                        Durham Public Schools Data Graphics
+                    </h1>
+                    <p className="mt-4 max-w-xl text-sm text-gray-700">
+                        All data sets are provided to the public by Durham Public Schools.
+                    </p>
+                </div>
+
+                <div className="space-x-4">
+                    <PrimaryButton size="xl" onClick={handleFilterSubmit}>
+                        Filter
+                    </PrimaryButton>
+                    <CancelButton
+                        size="xl"
+                        onClick={() => setFilterSelectionsMap(initialFilterSelectionMap)}
+                    >
+                        Reset
+                    </CancelButton>
+                </div>
             </div>
 
             {/* Filters */}
@@ -260,7 +443,14 @@ const TopBar = ({}: Props) => {
                                         >
                                             <PopoverButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                                                 <span>{section.name}</span>
-                                                <span className="ml-1.5 rounded-sm bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-700 tabular-nums">
+                                                <span
+                                                    className={[
+                                                        'ml-1.5 rounded-sm bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-700 tabular-nums',
+                                                        notify[section.key as FilterKeys]
+                                                            ? 'animate-ping'
+                                                            : '',
+                                                    ].join(' ')}
+                                                >
                                                     {
                                                         filterSelectionsMap.get(
                                                             section.key as FilterKeys
@@ -359,13 +549,22 @@ const TopBar = ({}: Props) => {
                             <div className="-m-1 flex flex-wrap items-center">
                                 {activeFilters.map(activeFilter => (
                                     <span
-                                        key={activeFilter.value}
+                                        key={`${activeFilter.id}-${activeFilter.title}-${activeFilter.label}`}
                                         className="m-1 inline-flex items-center rounded-full border border-gray-200 bg-white py-1.5 pr-2 pl-3 text-sm font-medium text-gray-900"
                                     >
-                                        <span>{activeFilter.label}</span>
+                                        <span className="flex flex-col px-0.5">
+                                            <span className="text-xs">{activeFilter.title}</span>
+                                            <span>{activeFilter.label}</span>
+                                        </span>
                                         <button
                                             type="button"
                                             className="ml-1 inline-flex size-4 shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-500"
+                                            onClick={() =>
+                                                handleUpdateFilterSelectMap(
+                                                    activeFilter.title,
+                                                    activeFilter.id
+                                                )
+                                            }
                                         >
                                             <span className="sr-only">
                                                 Remove filter for {activeFilter.label}

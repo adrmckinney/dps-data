@@ -1,12 +1,12 @@
 import { DataType, SubGroup } from '@prisma/client';
 
-type DataTypeEnumKeys = Record<DataType, DataTypeEnumObjects>;
+type DataTypeEnum = Record<DataType, DataTypeEnumObjects>;
 type DataTypeEnumObjects = {
     id: number;
     label: string;
 };
 
-export const DataTypeEnums: DataTypeEnumKeys = {
+export const DataTypeEnums: DataTypeEnum = {
     POPULATION: {
         id: 1,
         label: 'Population',
@@ -33,16 +33,44 @@ export const DataTypeEnums: DataTypeEnumKeys = {
     },
 };
 
-export const applySubgroup = (subgroup: SubGroup) => {
-    console.log('subgroup', subgroup);
+export const getKeyFromCategoryId = (categoryIds: number): DataType => {
+    let returnKey: DataType = 'OTHER';
+    Object.entries(DataTypeEnums).forEach(entry => {
+        const [key, value] = entry;
+        if (value.id === categoryIds) {
+            returnKey = key as DataType;
+            return;
+        }
+    });
+    return returnKey;
+};
+
+export const getKeysFromCategoryIds = (subgroupIds: Set<number> | undefined): DataType[] => {
+    const returnKeys: DataType[] = [];
+    if (!subgroupIds) return returnKeys;
+
+    subgroupIds.forEach(id => {
+        const key = getKeyFromCategoryId(id);
+        returnKeys.push(key);
+    });
+    return returnKeys;
+};
+
+export const applySubgroup = (
+    subgroup: SubGroup,
+    selectedCategoryIds: Set<number> | undefined
+): boolean => {
+    if (!selectedCategoryIds || selectedCategoryIds.size === 0) {
+        return true; // Show all if no filter is selected
+    }
 
     const availableTypes = subgroup.availableForDataTypes;
-    console.log('availableTypes', availableTypes);
-    if (!availableTypes) return true;
+    if (!availableTypes || availableTypes.length === 0) {
+        return false; // Hide if nothing is available
+    }
 
-    const targetEnum = Object.entries(DataTypeEnums).find(entry => {
-        return availableTypes.includes(entry[0] as DataType);
-    });
-    console.log('targetEnum', targetEnum);
-    return true;
+    // Convert DataType[] to the corresponding enum numeric IDs
+    const availableTypeIds = availableTypes.map(type => DataTypeEnums[type].id);
+
+    return availableTypeIds.some(id => selectedCategoryIds.has(id));
 };

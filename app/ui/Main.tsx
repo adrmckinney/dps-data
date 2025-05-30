@@ -1,10 +1,7 @@
 'use client';
 
-import { SubgroupPopulationResponse } from '@/types/population';
 import { FolderIcon, HomeIcon, UsersIcon } from '@heroicons/react/20/solid';
 import { ComponentType, SVGProps, useState } from 'react';
-import useFetch from '../hooks/useFetch';
-import { PopulationRouteService } from '../services/populationRouteService';
 import SideBar from './SideBar';
 import SideBarMobile from './SideBarMobile';
 import TopBar from './TopBar';
@@ -49,22 +46,7 @@ const Main = () => {
     const handleSidebarClose = () => {
         setSidebarOpen(false);
     };
-    const { state } = useFetch<SubgroupPopulationResponse[]>({
-        apiFn: () =>
-            PopulationRouteService.getSubgroupPopulation({
-                filters: {
-                    subgroupId: {
-                        operator: 'in',
-                        value: [12],
-                    },
-                    'school.levelId': {
-                        operator: 'equals',
-                        value: 3,
-                    },
-                },
-            }),
-    });
-    console.log('state', state);
+
     return (
         <div>
             <SideBarMobile

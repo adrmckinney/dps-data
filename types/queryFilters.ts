@@ -15,8 +15,11 @@ export type FilterValue = string | number | boolean | string[] | number[];
 
 export type OrderDirection = 'asc' | 'desc';
 
+export type FilterPayloadKeys = 'subgroupId' | 'gradeId' | 'schoolId' | 'yearId' | 'levelId';
+export type FilterOperatorObject = { operator: Operator; value: FilterValue };
+
 export type FilterPayload = {
-    filters?: Record<string, { operator: Operator; value: FilterValue }>;
+    filters?: Record<Partial<FilterPayloadKeys>, FilterOperatorObject>;
     sort?: { field: string; direction: OrderDirection };
 };
 
