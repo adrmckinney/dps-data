@@ -206,12 +206,42 @@ const TopBar = ({}: Props) => {
     };
 
     console.log('filterSelectionsMap', filterSelectionsMap);
+    // const payloadFilters = {}
+    // const { data, isLoading, error } = useQuery({
+    //         queryKey: ['subgroupPopulation', payloadFilters],
+    //         queryFn: () =>
+    //             fetchGraphQL<SubgroupPopulationResponse, { filters: typeof payloadFilters }>(
+    //                 GET_SUBGROUP_POPULATION,
+    //                 { filters: payloadFilters } // maybe payloadFilters.filters
+    //             ),
+    //         enabled: !!payloadFilters, // Only run query when we have filters
+    //     });
 
+    //     if (isLoading) return 'Loading...';
+    //     if (error) return `Error: ${error.message}`;
+
+    //     console.log('data', data);
     const handleFilterSubmit = async () => {
         const payloadFilters: { filters: Partial<FilterPayload['filters']> } =
             mapFilterMapToFilterPayload(filterSelectionsMap);
         if (!payloadFilters) return;
         console.log('payloadFilters', payloadFilters);
+
+        // CAN'T RUN THIS INSIDE THIS FUNCTION!
+        // const { data, isLoading, error } = useQuery({
+        //     queryKey: ['subgroupPopulation', payloadFilters],
+        //     queryFn: () =>
+        //         fetchGraphQL<SubgroupPopulationResponse, { filters: typeof payloadFilters }>(
+        //             GET_SUBGROUP_POPULATION,
+        //             { filters: payloadFilters } // maybe payloadFilters.filters
+        //         ),
+        //     enabled: !!payloadFilters, // Only run query when we have filters
+        // });
+
+        // if (isLoading) return 'Loading...';
+        // if (error) return `Error: ${error.message}`;
+
+        // console.log('data', data);
 
         const dataTypes = filterSelectionsMap.get('dataTypes');
         if (!dataTypes) return;

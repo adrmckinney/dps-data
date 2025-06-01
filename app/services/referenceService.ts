@@ -1,15 +1,21 @@
-export async function getAllReferenceData() {
-    const [years, grades, levels, schools, disciplines, subjects, subgroupTypes, subgroups] =
-        await Promise.all([
-            fetch('/api/years').then(res => res.json()),
-            fetch('/api/grades').then(res => res.json()),
-            fetch('/api/levels').then(res => res.json()),
-            fetch('/api/schools').then(res => res.json()),
-            fetch('/api/disciplines').then(res => res.json()),
-            fetch('/api/subjects').then(res => res.json()),
-            fetch('/api/subgroupTypes').then(res => res.json()),
-            fetch('/api/subgroups').then(res => res.json()),
-        ]);
+import { print } from 'graphql';
+import { REFERENCE_DATA_QUERY } from '../graphql/queries/referenceData';
 
-    return { years, grades, levels, schools, disciplines, subjects, subgroupTypes, subgroups };
+export async function getAllReferenceData() {
+    const res = await fetch('/api/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            query: print(REFERENCE_DATA_QUERY),
+        }),
+    });
+
+    const json = await res.json();
+
+    if (json.errors) {
+        console.error('GraphQL Error:', json.errors);
+        throw new Error(json.errors[0]?.message ?? 'Unknown error');
+    }
+
+    return json.data.referenceData;
 }
