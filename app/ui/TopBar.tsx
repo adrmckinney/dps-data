@@ -1,7 +1,7 @@
 'use client';
 
 import { FormChangeType } from '@/types/formChangeTypes';
-import { QueryModifiers } from '@/types/queryModifiers';
+import { FilterOptions } from '@/types/queryModifiers';
 import {
     Menu,
     MenuButton,
@@ -14,13 +14,13 @@ import {
 } from '@headlessui/react';
 
 import { useState } from 'react';
-import { getVisualizationData } from '../api/getVisualizationData';
 import { Icon } from '../assets/icons';
 import { useReferenceContext } from '../context/referenceContext';
 import { applySubgroup, DataTypeEnums, getKeysFromDataSetIds } from '../enums/DataTypeEnums';
+import { PopulationRouteService } from '../services/populationRouteService';
 import CancelButton from '../sharedComponents/buttons/CancelButton';
 import PrimaryButton from '../sharedComponents/buttons/PrimaryButton';
-import { getDataSetApiFns, mapFilterMapToQueryModifiers } from '../utils/apiFilterUtils';
+import { getDataSetApiFns } from '../utils/apiFilterUtils';
 import { UserNavigation } from './Main';
 import TopBarMobile from './TopBarMobile';
 
@@ -33,10 +33,10 @@ export type Filter = {
     id: string;
     key: string;
     name: string;
-    options: FilterOptions[];
+    options: FilterSelectOptions[];
 };
 
-type FilterOptions = {
+type FilterSelectOptions = {
     value: number;
     label: string;
     checked: boolean;
@@ -62,39 +62,39 @@ const sortOptions: SortOption[] = [
     { name: 'Newest', href: '#', current: false },
 ];
 
-type FilterKeys = 'dataTypes' | 'years' | 'schools' | 'subgroups' | 'grades';
-export type FilterSelection = Map<FilterKeys, Set<number>>;
+export type FilterSelectionMap = Map<FilterOptions | 'dataTypes', Set<number>>;
 
-const initialFilterSelectionMap: FilterSelection = new Map([
+const initialFilterSelectionMap: FilterSelectionMap = new Map([
     ['dataTypes', new Set()],
-    ['years', new Set()],
-    ['schools', new Set()],
-    ['subgroups', new Set()],
-    ['grades', new Set()],
+    ['yearIds', new Set()],
+    ['schoolIds', new Set()],
+    ['subgroupIds', new Set()],
+    ['gradeIds', new Set()],
 ]);
 
+type FilterKeys = 'dataTypes' | 'yearIds' | 'schoolIds' | 'subgroupIds' | 'gradeIds';
 const initialNotify: Record<FilterKeys, boolean> = {
     dataTypes: false,
-    years: false,
-    schools: false,
-    subgroups: false,
-    grades: false,
+    yearIds: false,
+    schoolIds: false,
+    subgroupIds: false,
+    gradeIds: false,
 };
 
 const TopBar = ({}: Props) => {
     const [open, setOpen] = useState(false);
     const { state } = useReferenceContext();
     const [filterSelectionsMap, setFilterSelectionsMap] =
-        useState<FilterSelection>(initialFilterSelectionMap);
+        useState<FilterSelectionMap>(initialFilterSelectionMap);
     const activeFilters: ActiveFilter[] = [];
     const handleClose = () => {
         setOpen(false);
     };
     const [notify, setNotify] = useState(initialNotify);
-    const selectedSchoolIds = filterSelectionsMap.get('schools');
+    const selectedSchoolIds = filterSelectionsMap.get('schoolIds');
     const selectedDataSetIds = filterSelectionsMap.get('dataTypes');
-    const selectedSubgroupIds = filterSelectionsMap.get('subgroups') || new Set();
-    const selectedGradeIds = filterSelectionsMap.get('grades') || new Set();
+    const selectedSubgroupIds = filterSelectionsMap.get('subgroupIds') || new Set();
+    const selectedGradeIds = filterSelectionsMap.get('gradeIds') || new Set();
 
     const handleNotify = (filterType: FilterKeys, value: boolean, timeOutValue: number = 0) => {
         if (timeOutValue > 0) {
@@ -125,9 +125,9 @@ const TopBar = ({}: Props) => {
             );
 
             if (!subgroupIsAvailable) {
-                handleNotify('subgroups', true);
-                newMap.get('subgroups')?.delete(group.id);
-                handleNotify('subgroups', false, 300);
+                handleNotify('subgroupIds', true);
+                newMap.get('subgroupIds')?.delete(group.id);
+                handleNotify('subgroupIds', false, 300);
             }
         });
     };
@@ -151,15 +151,15 @@ const TopBar = ({}: Props) => {
                 }
 
                 // Remove pre-selected grades that were in range for the school that was deselected
-                if (key === 'schools' && selectedGradeIds?.size > 1) {
+                if (key === 'schoolIds' && selectedGradeIds?.size > 1) {
                     const targetLevelId = state.schools.filter(s => s.id === value)[0]['levelId'];
 
                     const selectedGrades = state.grades.filter(g => selectedGradeIds.has(g.id));
                     selectedGrades.forEach(g => {
                         if (g.levelId === targetLevelId) {
-                            handleNotify('grades', true);
-                            newMap.get('grades')?.delete(g.id);
-                            handleNotify('grades', false, 300);
+                            handleNotify('gradeIds', true);
+                            newMap.get('gradeIds')?.delete(g.id);
+                            handleNotify('gradeIds', false, 300);
                         }
                     });
                 }
@@ -174,7 +174,7 @@ const TopBar = ({}: Props) => {
                 }
 
                 // Remove any pre-selected grades that are no longer in range for the selected school
-                if (key === 'schools' && selectedGradeIds?.size > 0) {
+                if (key === 'schoolIds' && selectedGradeIds?.size > 0) {
                     const allSelectedSchoolIds = new Set(selectedSchoolIds);
                     allSelectedSchoolIds.add(value);
                     const selectedSchoolLevelIds = new Set(
@@ -186,9 +186,9 @@ const TopBar = ({}: Props) => {
                     const selectedGrades = state.grades.filter(g => selectedGradeIds.has(g.id));
                     selectedGrades.forEach(g => {
                         if (!selectedSchoolLevelIds.has(g.levelId)) {
-                            handleNotify('grades', true);
-                            newMap.get('grades')?.delete(g.id);
-                            handleNotify('grades', false, 300);
+                            handleNotify('gradeIds', true);
+                            newMap.get('gradeIds')?.delete(g.id);
+                            handleNotify('gradeIds', false, 300);
                         }
                     });
                 }
@@ -208,30 +208,24 @@ const TopBar = ({}: Props) => {
     console.log('filterSelectionsMap', filterSelectionsMap);
 
     const handleFilterSubmit = async () => {
-        const queryModifiersPayload: QueryModifiers =
-            mapFilterMapToQueryModifiers(filterSelectionsMap);
-        console.log('filters', filters);
-        if (filters == null) return;
-        const payload: QueryModifiers = {
-            dataTypes: ['POPULATION_GRADE'],
-            globalFilters: {},
-            scopedFilters: {
-                POPULATION_GRADE: {
-                    filters: filters,
-                    sort: {
-                        field: 'schoolId',
-                        direction: 'asc',
-                    },
-                },
-            },
-        };
+        // const queryModifiersPayload: QueryModifiers =
+        //     mapFilterMapToQueryModifiers(filterSelectionsMap);
 
-        console.log('payload in TopBar', payload);
-        const data = await getVisualizationData(payload);
+        // const payload: QueryModifiers = {
+        //     dataTypes: getKeysFromDataSetIds(filterSelectionsMap.get('dataTypes')),
+        //     filters: filterSelectionsMap,
+        //     sort: {
+        //         field: 'schoolId',
+        //         direction: 'asc',
+        //     },
+        // };
+
+        // console.log('payload in TopBar', payload);
+        // const data = await getVisualizationData(filterSelectionsMap);
         // if (isLoading) return 'Loading...';
         // if (error) return `Error: ${error.message}`;
 
-        console.log('data', data);
+        // console.log('data', data);
 
         const dataTypes = filterSelectionsMap.get('dataTypes');
         if (!dataTypes) return;
@@ -240,32 +234,32 @@ const TopBar = ({}: Props) => {
         const popFn = dataTypeFns.get('subgroupPopulation');
         if (!popFn) return;
 
-        // const res = await tryCatch({
-        //     tryFn: async () => {
-        //         // return await popFn(payloadFilters);
-        //         return await PopulationRouteService.getSubgroupPopulation(
-        //             filters
-        //             //     {
-        //             //     filters: {
-        //             //         subgroupId: {
-        //             //             operator: 'in',
-        //             //             value: [12],
-        //             //         },
-        //             //         'school.levelId': {
-        //             //             operator: 'equals',
-        //             //             value: 3,
-        //             //         },
-        //             //     },
-        //             // }
-        //         );
-        //     },
-        //     catchFn: (error: unknown) => {
-        //         console.error('Error:', error);
-        //         throw error;
-        //     },
-        // });
+        const res = await tryCatch({
+            tryFn: async () => {
+                // return await popFn(payloadFilters);
+                return await PopulationRouteService.getSubgroupPopulation(
+                    filters
+                    //     {
+                    //     filters: {
+                    //         subgroupId: {
+                    //             operator: 'in',
+                    //             value: [12],
+                    //         },
+                    //         'school.levelId': {
+                    //             operator: 'equals',
+                    //             value: 3,
+                    //         },
+                    //     },
+                    // }
+                );
+            },
+            catchFn: (error: unknown) => {
+                console.error('Error:', error);
+                throw error;
+            },
+        });
 
-        // console.log('res', res);
+        console.log('res', res);
     };
 
     const selectedLevelIds = state.schools
@@ -296,7 +290,7 @@ const TopBar = ({}: Props) => {
                 return {
                     value: y.id,
                     label: y.schoolYear.replace('-', ' - '),
-                    checked: filterSelectionsMap.get('years')?.has(y.id) || false,
+                    checked: filterSelectionsMap.get('yearIds')?.has(y.id) || false,
                     onCheck: handleChecked,
                     show: true,
                 };
@@ -310,7 +304,7 @@ const TopBar = ({}: Props) => {
                 return {
                     value: s.id,
                     label: s.name,
-                    checked: filterSelectionsMap.get('schools')?.has(s.id) || false,
+                    checked: filterSelectionsMap.get('schoolIds')?.has(s.id) || false,
                     onCheck: handleChecked,
                     show: true,
                 };
@@ -324,7 +318,7 @@ const TopBar = ({}: Props) => {
                 return {
                     value: group.id,
                     label: group.name,
-                    checked: filterSelectionsMap.get('subgroups')?.has(group.id) || false,
+                    checked: filterSelectionsMap.get('subgroupIds')?.has(group.id) || false,
                     onCheck: handleChecked,
                     show: applySubgroup(group, selectedDataSetIds),
                 };
@@ -338,7 +332,7 @@ const TopBar = ({}: Props) => {
                 return {
                     value: grade.id,
                     label: grade.name,
-                    checked: filterSelectionsMap.get('grades')?.has(grade.id) || false,
+                    checked: filterSelectionsMap.get('gradeIds')?.has(grade.id) || false,
                     onCheck: handleChecked,
                     show:
                         selectedSchoolIds?.size === 0
@@ -356,16 +350,16 @@ const TopBar = ({}: Props) => {
                 case 'dataTypes':
                     label = Object.values(DataTypeEnums).find(dt => dt.id === value)?.label || '';
                     break;
-                case 'schools':
+                case 'schoolIds':
                     label = state.schools.find(s => s.id === value)?.abbreviation || '';
                     break;
-                case 'grades':
+                case 'gradeIds':
                     label = state.grades.find(g => g.id === value)?.name || '';
                     break;
-                case 'subgroups':
+                case 'subgroupIds':
                     label = state.subgroups.find(sg => sg.id === value)?.name || '';
                     break;
-                case 'years':
+                case 'yearIds':
                     label =
                         state.years.find(y => y.id === value)?.schoolYear.replace('-', ' - ') || '';
                     break;

@@ -15,8 +15,8 @@ export type Operator =
 
 export type FilterValue = string | number | boolean | string[] | number[];
 
-type GlobalFiltersOptions = 'schoolId' | 'yearId';
-type ScopedFiltersOptions = 'subgroupId' | 'gradeId' | 'levelId';
+type GlobalFiltersOptions = 'schoolIds' | 'yearIds';
+type ScopedFiltersOptions = 'subgroupIds' | 'gradeIds' | 'levelIds';
 export type FilterOptions = GlobalFiltersOptions | ScopedFiltersOptions;
 
 export type OrderDirection = 'asc' | 'desc';
@@ -25,18 +25,39 @@ export type GlobalFilters = {
     [field in GlobalFiltersOptions]?: FilterCondition;
 };
 
+// export type ScopedFilters = {
+//     [key in DataType]: {
+//         filters?: FilterCondition;
+//         sort?: {
+//             field: string;
+//             direction: OrderDirection;
+//         };
+//     };
+// };
 export type ScopedFilters = {
-    [key in DataType]: {
-        filters?: FilterCondition;
-        sort?: {
-            field: string;
-            direction: OrderDirection;
-        };
+    filters?: FilterCondition;
+    sort?: {
+        field: string;
+        direction: OrderDirection;
     };
 };
 
-export type QueryModifiers = { dataTypes: DataType[] } & { globalFilters: GlobalFilters } & {
-    scopedFilters: Partial<ScopedFilters>;
+// export type QueryModifiers = { dataTypes: DataType[] } & {
+//     globalFilters: Partial<GlobalFilters>;
+// } & {
+//     scopedFilters: Partial<ScopedFilters>;
+// };
+export type QueryModifiers = {
+    dataTypes: DataType[];
+    filters: Filters[];
+    sort?: {
+        field: string;
+        direction: OrderDirection;
+    };
+};
+
+export type Filters = {
+    [field in FilterOptions]: FilterCondition;
 };
 
 export type FilterCondition = {
