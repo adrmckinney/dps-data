@@ -3,41 +3,53 @@ import { DataType, SubGroup } from '@prisma/client';
 type DataTypeEnum = Record<DataType, DataTypeEnumObjects>;
 type DataTypeEnumObjects = {
     id: number;
+    key: DataType;
     label: string;
 };
 
 export const DataTypeEnums: DataTypeEnum = {
-    POPULATION: {
+    POPULATION_GRADE: {
         id: 1,
-        label: 'Population',
+        key: 'POPULATION_GRADE',
+        label: 'Population - grades',
+    },
+    POPULATION_SUBGROUP: {
+        id: 2,
+        key: 'POPULATION_SUBGROUP',
+        label: 'Population - subgroups',
     },
     DISCIPLINE_OVERALL: {
-        id: 2,
+        id: 3,
+        key: 'DISCIPLINE_OVERALL',
         label: 'Discipline - overall',
     },
     DISCIPLINE_SUBGROUPS: {
-        id: 3,
+        id: 4,
+        key: 'DISCIPLINE_SUBGROUPS',
         label: 'Discipline - subgroups',
     },
     ACHIEVEMENT_OVERALL: {
-        id: 4,
+        id: 5,
+        key: 'ACHIEVEMENT_OVERALL',
         label: 'Achievement - overall',
     },
     ACHIEVEMENT_SUBGROUPS: {
-        id: 5,
+        id: 6,
+        key: 'ACHIEVEMENT_SUBGROUPS',
         label: 'Achievement - subgroups',
     },
     OTHER: {
-        id: 6,
+        id: 7,
+        key: 'OTHER',
         label: 'Other',
     },
 };
 
-export const getKeyFromCategoryId = (categoryIds: number): DataType => {
+export const getKeyFromDataSetId = (dataSetId: number): DataType => {
     let returnKey: DataType = 'OTHER';
     Object.entries(DataTypeEnums).forEach(entry => {
         const [key, value] = entry;
-        if (value.id === categoryIds) {
+        if (value.id === dataSetId) {
             returnKey = key as DataType;
             return;
         }
@@ -45,12 +57,12 @@ export const getKeyFromCategoryId = (categoryIds: number): DataType => {
     return returnKey;
 };
 
-export const getKeysFromCategoryIds = (subgroupIds: Set<number> | undefined): DataType[] => {
+export const getKeysFromDataSetIds = (dataSetIds: Set<number> | undefined): DataType[] => {
     const returnKeys: DataType[] = [];
-    if (!subgroupIds) return returnKeys;
+    if (!dataSetIds) return returnKeys;
 
-    subgroupIds.forEach(id => {
-        const key = getKeyFromCategoryId(id);
+    dataSetIds.forEach(id => {
+        const key = getKeyFromDataSetId(id);
         returnKeys.push(key);
     });
     return returnKeys;

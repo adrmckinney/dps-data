@@ -1,0 +1,22 @@
+type PopulationData {
+    subgroupData: [SubgroupPopulation!]
+    gradeData: [GradePopulation!]
+}
+
+type SubgroupPopulation {
+    id: ID!
+    schoolId: ID!
+    yearId: ID!
+    subgroupId: ID!
+    pdfSourceId: ID!
+    count: Int!
+}
+
+type GradePopulation {
+    id: ID!
+    schoolId: ID!
+    yearId: ID!
+    gradeId: ID!
+    pdfSourceId: ID!
+    count: Int!
+}

@@ -1,0 +1,6 @@
+type Level {
+    id: ID!
+    name: String!
+    abbreviation: String!
+    availableForDataTypes: [String!]!
+}

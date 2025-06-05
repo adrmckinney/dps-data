@@ -1,4 +1,4 @@
-import type { FilterCondition, OrderDirection } from '../types/queryFilters.ts';
+import type { FilterCondition, OrderDirection } from '../types/queryModifiers.ts';
 
 function buildClause(condition: FilterCondition) {
     if (condition.operator === 'equals') {

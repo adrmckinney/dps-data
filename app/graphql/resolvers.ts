@@ -1,16 +1,18 @@
-import { DisciplineService } from '@/services/disciplineService';
+import { DataSourceService } from '@/services/dataSoureService';
+import { DisciplineService } from '@/services/disciplineService/disciplineService';
 import { GradeService } from '@/services/gradeService';
 import { LevelService } from '@/services/levelService';
-import { PopulationService } from '@/services/populationService/populationService';
 import { SchoolService } from '@/services/schoolService';
 import { SubgroupService } from '@/services/subgroupService';
 import { SubgroupTypeService } from '@/services/subgroupTypeService';
 import { SubjectService } from '@/services/subjectService';
+import { VisualizationService } from '@/services/visualizationService';
 import { YearService } from '@/services/yearService';
-import { FilterPayload } from '@/types/queryFilters';
+import { QueryModifiers } from '@/types/queryModifiers';
 
 export const resolvers = {
     Query: {
+        _empty: () => 'ok',
         referenceData: async () => {
             const [
                 years,
@@ -21,6 +23,7 @@ export const resolvers = {
                 subjects,
                 subgroupTypes,
                 subgroups,
+                dataSources,
             ] = await Promise.all([
                 YearService.getYears(),
                 GradeService.getGrades(),
@@ -30,6 +33,7 @@ export const resolvers = {
                 SubjectService.getSubjects(),
                 SubgroupTypeService.getSubgroupTypes(),
                 SubgroupService.getSubgroups(),
+                DataSourceService.getDataSources(),
             ]);
 
             return {
@@ -41,18 +45,15 @@ export const resolvers = {
                 subjects,
                 subgroupTypes,
                 subgroups,
+                dataSources,
             };
         },
         years: async () => await YearService.getYears(),
         schools: async () => await SchoolService.getSchools(),
         grades: async () => await GradeService.getGrades(),
-        subgroupPopulation: async (_: unknown, { filters }: { filters: FilterPayload }) => {
-            PopulationService.getFilteredSubgroupPopulation(filters);
-            return [];
-        },
-        gradePopulation: async (_: unknown, { filters }: { filters: FilterPayload }) => {
-            PopulationService.getFilteredGradePopulation(filters);
-            return [];
+        dataSources: async () => await DataSourceService.getDataSources(),
+        visualizeData: async (_: unknown, { payload }: { payload: QueryModifiers }) => {
+            return await VisualizationService.getVisualizeData(payload);
         },
     },
 };

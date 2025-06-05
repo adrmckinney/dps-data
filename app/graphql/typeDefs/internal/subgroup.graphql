@@ -1,0 +1,9 @@
+type Subgroup {
+    id: ID!
+    name: String!
+    abbreviation: String!
+    typeId: ID!
+    key: String!
+    secondaryKey: String!
+    availableForDataTypes: [String!]!
+}

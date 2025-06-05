@@ -1,0 +1,11 @@
+type ReferenceData {
+    years: [Year!]!
+    grades: [Grade!]!
+    levels: [Level!]!
+    schools: [School!]!
+    disciplines: [Discipline!]!
+    subjects: [Subject!]!
+    subgroupTypes: [SubgroupType!]!
+    subgroups: [Subgroup!]!
+    dataSources: [DataSource!]!
+}

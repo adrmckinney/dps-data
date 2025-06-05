@@ -1,5 +1,5 @@
 import { withApiErrorHandling } from '@/errors/handleApiError';
-import { DisciplineService } from '@/services/disciplineService';
+import { DisciplineService } from '@/services/disciplineService/disciplineService';
 import { NextResponse } from 'next/server';
 
 export const GET = withApiErrorHandling(async () => {

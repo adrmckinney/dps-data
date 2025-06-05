@@ -1,0 +1,8 @@
+type DisciplineData {
+    subgroupData: [SubgroupDiscipline!]
+}
+
+type SubgroupDiscipline {
+    id: ID!
+    name: String!
+}

@@ -1,4 +1,5 @@
-import { FilterOperatorObject, FilterPayload } from '@/types/queryFilters';
+import { FilterCondition, QueryModifiers } from '@/types/queryModifiers';
+import { getKeysFromDataSetIds } from '../enums/DataTypeEnums';
 import { PopulationRouteService } from '../services/populationRouteService';
 import { FilterSelection } from '../ui/TopBar';
 
@@ -10,23 +11,32 @@ new Map([
     ['grades', {}],
 ]);
 
-export const mapFilterMapToFilterPayload = (
+export const mapFilterMapToQueryModifiers = (
     filterMap: FilterSelection
-): { filters: Partial<FilterPayload['filters']> } => {
-    const filters: Partial<FilterPayload['filters']> = {};
+): { filters: QueryModifiers } => {
+    const ret: QueryModifiers = {
+        dataTypes: getKeysFromDataSetIds(filterMap.get('dataTypes')),
+        globalFilters: {},
+    };
+
+    const scoped: FilterCondition = {};
+
+    // consider doing map for the scoped filters
+
+    // const filters: Partial<QueryModifiers['filters']> = {};
     for (const [key, setValues] of filterMap.entries()) {
         switch (key) {
+            case 'schools':
+                const schoolOp = createOperatorObject(setValues);
+                if (schoolOp) ret.globalFilters['schoolId'] = schoolOp;
+                break;
             case 'years':
                 const yearOp = createOperatorObject(setValues);
-                if (yearOp) filters.schoolId = yearOp;
+                if (yearOp) ret.globalFilters['yearId'] = yearOp;
                 break;
             case 'subgroups':
                 const subgroupOp = createOperatorObject(setValues);
-                if (subgroupOp) filters.subgroupId = subgroupOp;
-                break;
-            case 'schools':
-                const schoolOp = createOperatorObject(setValues);
-                if (schoolOp) filters.schoolId = schoolOp;
+                if (subgroupOp) scoped[''] = subgroupOp;
                 break;
             case 'grades':
                 const gradeOp = createOperatorObject(setValues);
@@ -38,12 +48,15 @@ export const mapFilterMapToFilterPayload = (
             //     break;
         }
     }
-    return { filters };
+
+    ret.globalFilters;
+
+    return ret;
 };
 
 export const getDataSetApiFns = <T>(
     dataTypes: Set<number>
-): Map<string, (payload: Partial<FilterPayload>) => Promise<T>> => {
+): Map<string, (payload: Partial<QueryModifiers>) => Promise<T>> => {
     const apiFnMap = new Map();
     for (const typeId of dataTypes) {
         switch (typeId) {
@@ -55,7 +68,7 @@ export const getDataSetApiFns = <T>(
     return apiFnMap;
 };
 
-const createOperatorObject = (setValues: Set<number>): FilterOperatorObject | null => {
+const createOperatorObject = (setValues: Set<number>): FilterCondition | null => {
     if (setValues.size === 0) {
         return null;
     } else if (setValues.size === 1) {

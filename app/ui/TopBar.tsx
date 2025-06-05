@@ -1,8 +1,7 @@
 'use client';
 
 import { FormChangeType } from '@/types/formChangeTypes';
-import { FilterPayload } from '@/types/queryFilters';
-import { tryCatch } from '@/utils/tryCatch';
+import { QueryModifiers } from '@/types/queryModifiers';
 import {
     Menu,
     MenuButton,
@@ -13,14 +12,15 @@ import {
     PopoverGroup,
     PopoverPanel,
 } from '@headlessui/react';
+
 import { useState } from 'react';
+import { getVisualizationData } from '../api/getVisualizationData';
 import { Icon } from '../assets/icons';
 import { useReferenceContext } from '../context/referenceContext';
-import { applySubgroup, DataTypeEnums, getKeysFromCategoryIds } from '../enums/DataTypeEnums';
-import { PopulationRouteService } from '../services/populationRouteService';
+import { applySubgroup, DataTypeEnums, getKeysFromDataSetIds } from '../enums/DataTypeEnums';
 import CancelButton from '../sharedComponents/buttons/CancelButton';
 import PrimaryButton from '../sharedComponents/buttons/PrimaryButton';
-import { getDataSetApiFns, mapFilterMapToFilterPayload } from '../utils/apiFilterUtils';
+import { getDataSetApiFns, mapFilterMapToQueryModifiers } from '../utils/apiFilterUtils';
 import { UserNavigation } from './Main';
 import TopBarMobile from './TopBarMobile';
 
@@ -92,7 +92,7 @@ const TopBar = ({}: Props) => {
     };
     const [notify, setNotify] = useState(initialNotify);
     const selectedSchoolIds = filterSelectionsMap.get('schools');
-    const selectedCategoryIds = filterSelectionsMap.get('dataTypes');
+    const selectedDataSetIds = filterSelectionsMap.get('dataTypes');
     const selectedSubgroupIds = filterSelectionsMap.get('subgroups') || new Set();
     const selectedGradeIds = filterSelectionsMap.get('grades') || new Set();
 
@@ -116,7 +116,7 @@ const TopBar = ({}: Props) => {
         newMap: Map<FilterKeys, Set<number>>,
         selectedDataSetIds: Set<number>
     ): void => {
-        const selectedCategoryKeys = getKeysFromCategoryIds(selectedDataSetIds);
+        const selectedCategoryKeys = getKeysFromDataSetIds(selectedDataSetIds);
         const selectedSubgroups = state.subgroups.filter(g => selectedSubgroupIds.has(g.id));
 
         selectedSubgroups?.forEach(group => {
@@ -145,7 +145,7 @@ const TopBar = ({}: Props) => {
                 // Remove pre-selected subgroups that were in range for the dataType that was deselected
                 // Must be > 1 (not 0) because it is checking if the last one is being removed
                 if (key === 'dataTypes' && selectedSubgroupIds.size > 1) {
-                    const allSelectedDataSetIds = new Set(selectedCategoryIds);
+                    const allSelectedDataSetIds = new Set(selectedDataSetIds);
                     allSelectedDataSetIds.delete(value);
                     filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
                 }
@@ -168,7 +168,7 @@ const TopBar = ({}: Props) => {
 
                 // Remove any pre-selected subgroups that are no longer in range for the selected dataType
                 if (key === 'dataTypes' && selectedSubgroupIds?.size > 0) {
-                    const allSelectedDataSetIds = new Set(selectedCategoryIds);
+                    const allSelectedDataSetIds = new Set(selectedDataSetIds);
                     allSelectedDataSetIds.add(value);
                     filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
                 }
@@ -206,42 +206,32 @@ const TopBar = ({}: Props) => {
     };
 
     console.log('filterSelectionsMap', filterSelectionsMap);
-    // const payloadFilters = {}
-    // const { data, isLoading, error } = useQuery({
-    //         queryKey: ['subgroupPopulation', payloadFilters],
-    //         queryFn: () =>
-    //             fetchGraphQL<SubgroupPopulationResponse, { filters: typeof payloadFilters }>(
-    //                 GET_SUBGROUP_POPULATION,
-    //                 { filters: payloadFilters } // maybe payloadFilters.filters
-    //             ),
-    //         enabled: !!payloadFilters, // Only run query when we have filters
-    //     });
 
-    //     if (isLoading) return 'Loading...';
-    //     if (error) return `Error: ${error.message}`;
-
-    //     console.log('data', data);
     const handleFilterSubmit = async () => {
-        const payloadFilters: { filters: Partial<FilterPayload['filters']> } =
-            mapFilterMapToFilterPayload(filterSelectionsMap);
-        if (!payloadFilters) return;
-        console.log('payloadFilters', payloadFilters);
+        const queryModifiersPayload: QueryModifiers =
+            mapFilterMapToQueryModifiers(filterSelectionsMap);
+        console.log('filters', filters);
+        if (filters == null) return;
+        const payload: QueryModifiers = {
+            dataTypes: ['POPULATION_GRADE'],
+            globalFilters: {},
+            scopedFilters: {
+                POPULATION_GRADE: {
+                    filters: filters,
+                    sort: {
+                        field: 'schoolId',
+                        direction: 'asc',
+                    },
+                },
+            },
+        };
 
-        // CAN'T RUN THIS INSIDE THIS FUNCTION!
-        // const { data, isLoading, error } = useQuery({
-        //     queryKey: ['subgroupPopulation', payloadFilters],
-        //     queryFn: () =>
-        //         fetchGraphQL<SubgroupPopulationResponse, { filters: typeof payloadFilters }>(
-        //             GET_SUBGROUP_POPULATION,
-        //             { filters: payloadFilters } // maybe payloadFilters.filters
-        //         ),
-        //     enabled: !!payloadFilters, // Only run query when we have filters
-        // });
-
+        console.log('payload in TopBar', payload);
+        const data = await getVisualizationData(payload);
         // if (isLoading) return 'Loading...';
         // if (error) return `Error: ${error.message}`;
 
-        // console.log('data', data);
+        console.log('data', data);
 
         const dataTypes = filterSelectionsMap.get('dataTypes');
         if (!dataTypes) return;
@@ -250,32 +240,32 @@ const TopBar = ({}: Props) => {
         const popFn = dataTypeFns.get('subgroupPopulation');
         if (!popFn) return;
 
-        const res = await tryCatch({
-            tryFn: async () => {
-                // return await popFn(payloadFilters);
-                return await PopulationRouteService.getSubgroupPopulation(
-                    payloadFilters
-                    //     {
-                    //     filters: {
-                    //         subgroupId: {
-                    //             operator: 'in',
-                    //             value: [12],
-                    //         },
-                    //         'school.levelId': {
-                    //             operator: 'equals',
-                    //             value: 3,
-                    //         },
-                    //     },
-                    // }
-                );
-            },
-            catchFn: (error: unknown) => {
-                console.error('Error:', error);
-                throw error;
-            },
-        });
+        // const res = await tryCatch({
+        //     tryFn: async () => {
+        //         // return await popFn(payloadFilters);
+        //         return await PopulationRouteService.getSubgroupPopulation(
+        //             filters
+        //             //     {
+        //             //     filters: {
+        //             //         subgroupId: {
+        //             //             operator: 'in',
+        //             //             value: [12],
+        //             //         },
+        //             //         'school.levelId': {
+        //             //             operator: 'equals',
+        //             //             value: 3,
+        //             //         },
+        //             //     },
+        //             // }
+        //         );
+        //     },
+        //     catchFn: (error: unknown) => {
+        //         console.error('Error:', error);
+        //         throw error;
+        //     },
+        // });
 
-        console.log('res', res);
+        // console.log('res', res);
     };
 
     const selectedLevelIds = state.schools
@@ -336,7 +326,7 @@ const TopBar = ({}: Props) => {
                     label: group.name,
                     checked: filterSelectionsMap.get('subgroups')?.has(group.id) || false,
                     onCheck: handleChecked,
-                    show: applySubgroup(group, selectedCategoryIds),
+                    show: applySubgroup(group, selectedDataSetIds),
                 };
             }),
         },

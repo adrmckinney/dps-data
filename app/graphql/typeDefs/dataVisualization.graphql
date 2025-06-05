@@ -1,0 +1,5 @@
+type DataVisualization {
+    population: PopulationData
+    discipline: DisciplineData
+    achievement: AchievementData
+}

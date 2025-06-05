@@ -31,11 +31,13 @@ model Year {
 }
 
 model Grade {
-  id              Int               @id @default(autoincrement())
-  name            String            @unique
-  alternativeName String            @unique
-  abbreviation    String            @unique
-  levelId         Int
+  id                    Int        @id @default(autoincrement())
+  name                  String     @unique
+  alternativeName       String     @unique
+  abbreviation          String     @unique
+  levelId               Int
+  availableForDataTypes DataType[]
+
   level           Level             @relation(fields: [levelId], references: [id])
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
@@ -43,14 +45,16 @@ model Grade {
 }
 
 model Level {
-  id           Int       @id @default(autoincrement())
-  name         String    @unique
-  abbreviation String
-  schools      School[]
-  subjects     Subject[]
-  grade        Grade[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
+  id                    Int        @id @default(autoincrement())
+  name                  String     @unique
+  abbreviation          String
+  schools               School[]
+  subjects              Subject[]
+  grade                 Grade[]
+  availableForDataTypes DataType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model School {
@@ -60,6 +64,7 @@ model School {
   abbreviation       String
   otherNames         String[]
   levelId            Int
+  founded            Int
   level              Level                @relation(fields: [levelId], references: [id])
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
@@ -69,17 +74,20 @@ model School {
 }
 
 model Discipline {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
-  abbreviation String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  id                    Int        @id @default(autoincrement())
+  name                  String     @unique
+  abbreviation          String
+  availableForDataTypes DataType[]
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @default(now()) @updatedAt
 }
 
 model Subject {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  levelId   Int
+  id                    Int        @id @default(autoincrement())
+  name                  String     @unique
+  levelId               Int
+  availableForDataTypes DataType[]
+
   level     Level    @relation(fields: [levelId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -112,7 +120,8 @@ model SubGroup {
 // |                    DYNAMIC MODELS                        |
 // ************************************************************
 enum DataType {
-  POPULATION
+  POPULATION_GRADE
+  POPULATION_SUBGROUP
   ACHIEVEMENT_OVERALL
   ACHIEVEMENT_SUBGROUPS
   DISCIPLINE_OVERALL

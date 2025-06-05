@@ -1,15 +1,15 @@
 import { Prisma } from '@prisma/client';
-import type { QueryFilterPayload } from '../types/queryFilters.ts';
+import type { QueryFilterSort } from '../types/queryModifiers.ts';
 import { buildSortOrder, buildWhereClause } from './Filter.ts';
 
 export function buildGradePopulationWhereClause(
-    filters: QueryFilterPayload['filters']
+    filters: QueryFilterSort['filters']
 ): Prisma.GradePopulationWhereInput {
     return buildWhereClause<Prisma.GradePopulationWhereInput>(filters ?? {});
 }
 
 export function buildGradePopulationSortOrder(
-    sort?: QueryFilterPayload['sort']
+    sort?: QueryFilterSort['sort']
 ): Prisma.GradePopulationOrderByWithRelationInput[] | undefined {
     return buildSortOrder<Prisma.GradePopulationOrderByWithRelationInput>(sort, {
         field: 'year.startYear',

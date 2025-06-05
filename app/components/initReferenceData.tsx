@@ -18,6 +18,7 @@ export default function InitReferenceData() {
                 subjects,
                 subgroupTypes,
                 subgroups,
+                dataSources,
             } = await getAllReferenceData();
 
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'years', payload: years });
@@ -28,6 +29,7 @@ export default function InitReferenceData() {
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'subjects', payload: subjects });
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'subgroupTypes', payload: subgroupTypes });
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'subgroups', payload: subgroups });
+            dispatch({ type: 'SET_REFERENCE_DATA', key: 'dataSources', payload: dataSources });
         })();
     }, [dispatch]);
 

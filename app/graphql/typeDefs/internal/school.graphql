@@ -1,0 +1,9 @@
+type School {
+    id: ID!
+    name: String!
+    code: Int!
+    abbreviation: String!
+    otherNames: [String!]!
+    levelId: ID!
+    founded: Int!
+}

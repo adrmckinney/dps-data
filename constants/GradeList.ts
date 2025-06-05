@@ -1,3 +1,4 @@
+import { DataType } from '@prisma/client';
 import type { LevelEnumValue } from './LevelList.ts';
 import { levels } from './LevelList.ts';
 
@@ -7,6 +8,7 @@ export type Grade = {
     abbreviation: string;
     levelId: LevelEnumValue;
     value: number;
+    availableForDataTypes: DataType[];
 };
 
 // Full grade map
@@ -17,6 +19,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: 'PK',
         levelId: levels.unknown.value,
         value: 1,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     kindergarten: {
         name: 'Kindergarten',
@@ -24,6 +27,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: 'KI',
         levelId: levels.unknown.value,
         value: 2,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     first: {
         name: 'First Grade',
@@ -31,6 +35,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '01',
         levelId: levels.elementary.value,
         value: 3,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     second: {
         name: 'Second Grade',
@@ -38,6 +43,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '02',
         levelId: levels.elementary.value,
         value: 4,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     third: {
         name: 'Third Grade',
@@ -45,6 +51,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '03',
         levelId: levels.elementary.value,
         value: 5,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     fourth: {
         name: 'Fourth Grade',
@@ -52,6 +59,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '04',
         levelId: levels.elementary.value,
         value: 6,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     fifth: {
         name: 'Fifth Grade',
@@ -59,6 +67,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '05',
         levelId: levels.elementary.value,
         value: 7,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     sixth: {
         name: 'Sixth Grade',
@@ -66,6 +75,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '06',
         levelId: levels.middleSchool.value,
         value: 8,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     seventh: {
         name: 'Seventh Grade',
@@ -73,6 +83,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '07',
         levelId: levels.middleSchool.value,
         value: 9,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     eighth: {
         name: 'Eighth Grade',
@@ -80,6 +91,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '08',
         levelId: levels.middleSchool.value,
         value: 10,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     ninth: {
         name: 'Ninth Grade',
@@ -87,6 +99,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '09',
         levelId: levels.highSchool.value,
         value: 11,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     tenth: {
         name: 'Tenth Grade',
@@ -94,6 +107,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '10',
         levelId: levels.highSchool.value,
         value: 12,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     eleventh: {
         name: 'Eleventh Grade',
@@ -101,6 +115,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '11',
         levelId: levels.highSchool.value,
         value: 13,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     twelfth: {
         name: 'Twelfth Grade',
@@ -108,6 +123,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: '12',
         levelId: levels.highSchool.value,
         value: 14,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     xg: {
         name: 'Ungraded',
@@ -115,6 +131,7 @@ export const grades: Record<string, Grade> = {
         abbreviation: 'XG',
         levelId: levels.unknown.value,
         value: 15,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
     thirteen: {
         // This is a grade in the 2024-2025 demographics/population pdf
@@ -124,16 +141,18 @@ export const grades: Record<string, Grade> = {
         abbreviation: '13',
         levelId: levels.highSchool.value,
         value: 16,
+        availableForDataTypes: ['POPULATION_GRADE'],
     },
 } as const;
 
 // Used to seed the Grades table
 export const GRADES_SEED: Omit<Grade, 'value'>[] = Object.values(grades).map(
-    ({ name, alternativeName, abbreviation, levelId }) => ({
+    ({ name, alternativeName, abbreviation, levelId, availableForDataTypes }) => ({
         name,
         alternativeName,
         abbreviation,
         levelId,
+        availableForDataTypes,
     })
 );
 

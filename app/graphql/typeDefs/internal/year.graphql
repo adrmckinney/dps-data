@@ -1,0 +1,6 @@
+type Year {
+    id: ID!
+    startYear: Int!
+    endYear: Int!
+    schoolYear: String!
+}

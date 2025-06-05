@@ -1,0 +1,11 @@
+type DataSource {
+    id: ID!
+    url: String!
+    localPath: String
+    title: String!
+    yearId: ID!
+    published: String!
+    notes: String
+    dataType: String!
+    docType: String!
+}

@@ -19,7 +19,7 @@ export const RACE: SubGroupList[] = [
         secondaryKey: 'B',
         typeId: subGroupTypes.race.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -31,7 +31,7 @@ export const RACE: SubGroupList[] = [
         secondaryKey: 'H',
         typeId: subGroupTypes.race.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -43,7 +43,7 @@ export const RACE: SubGroupList[] = [
         secondaryKey: 'W',
         typeId: subGroupTypes.race.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -54,7 +54,7 @@ export const RACE: SubGroupList[] = [
         key: 'I',
         secondaryKey: 'I',
         typeId: subGroupTypes.race.value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Asian',
@@ -62,7 +62,7 @@ export const RACE: SubGroupList[] = [
         key: 'A',
         secondaryKey: 'A',
         typeId: subGroupTypes.race.value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Hawaiian Pacific',
@@ -70,7 +70,7 @@ export const RACE: SubGroupList[] = [
         key: 'HP',
         secondaryKey: 'HP',
         typeId: subGroupTypes.race.value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Multi Racial',
@@ -78,7 +78,7 @@ export const RACE: SubGroupList[] = [
         key: 'MR',
         secondaryKey: 'MR',
         typeId: subGroupTypes.race.value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Other',
@@ -87,7 +87,7 @@ export const RACE: SubGroupList[] = [
         secondaryKey: 'O',
         typeId: subGroupTypes.race.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -102,7 +102,7 @@ export const GENDER: SubGroupList[] = [
         secondaryKey: 'M',
         typeId: subGroupTypes.gender.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -114,7 +114,7 @@ export const GENDER: SubGroupList[] = [
         secondaryKey: 'F',
         typeId: subGroupTypes.gender.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -129,7 +129,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'Black - M',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -141,7 +141,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'Black - F',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -153,7 +153,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'Hispanic - M',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -165,7 +165,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'Hispanic - F',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -177,7 +177,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'White - M',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -189,7 +189,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'White - F',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -200,7 +200,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'American Indian - M',
         secondaryKey: 'American Indian - M',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'American Indian Female',
@@ -208,7 +208,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'American Indian - F',
         secondaryKey: 'American Indian - F',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Asian Male',
@@ -216,7 +216,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'Asian - M',
         secondaryKey: 'Asian - M',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Asian Female',
@@ -224,7 +224,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'Asian - F',
         secondaryKey: 'Asian - F',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Hawaiian Pacific Male',
@@ -232,7 +232,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'Hawaiian Pacific - M',
         secondaryKey: 'Hawaiian Pacific - M',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Hawaiian Pacific Female',
@@ -240,7 +240,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'Hawaiian Pacific - F',
         secondaryKey: 'Hawaiian Pacific - F',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Multi Racial Male',
@@ -248,7 +248,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'Multi Racial - M',
         secondaryKey: 'Multi Racial - M',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Multi Racial Female',
@@ -256,7 +256,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         key: 'Multi Racial - F',
         secondaryKey: 'Multi Racial - F',
         typeId: subGroupTypes['race-gender combo'].value,
-        availableForDataTypes: [DataType.POPULATION],
+        availableForDataTypes: [DataType.POPULATION_SUBGROUP],
     },
     {
         name: 'Other Male',
@@ -265,7 +265,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'OM',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -277,7 +277,7 @@ export const RACE_GENDER_COMBO: SubGroupList[] = [
         secondaryKey: 'OF',
         typeId: subGroupTypes['race-gender combo'].value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],
@@ -327,7 +327,7 @@ export const ALL_STUDENTS: SubGroupList[] = [
         secondaryKey: 'ALL',
         typeId: subGroupTypes.overall.value,
         availableForDataTypes: [
-            DataType.POPULATION,
+            DataType.POPULATION_SUBGROUP,
             DataType.DISCIPLINE_SUBGROUPS,
             DataType.ACHIEVEMENT_SUBGROUPS,
         ],

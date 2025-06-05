@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+    DataSource,
     Discipline,
     Grade,
     Level,
@@ -22,6 +23,7 @@ type ReferenceState = {
     subjects: Subject[];
     subgroupTypes: SubGroupType[];
     subgroups: SubGroup[];
+    dataSources: DataSource[];
 };
 
 type Action = { type: 'SET_REFERENCE_DATA'; key: keyof ReferenceState; payload: unknown };
@@ -35,6 +37,7 @@ const initialState: ReferenceState = {
     subjects: [],
     subgroupTypes: [],
     subgroups: [],
+    dataSources: [],
 };
 
 const ReferenceContext = createContext<{

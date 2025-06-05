@@ -1,0 +1,8 @@
+type Grade {
+    id: ID!
+    name: String!
+    abbreviation: String!
+    alternativeName: String!
+    levelId: ID!
+    availableForDataTypes: [String!]!
+}

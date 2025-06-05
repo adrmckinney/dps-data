@@ -52,6 +52,17 @@ export const REFERENCE_DATA_QUERY = gql`
                 secondaryKey
                 availableForDataTypes
             }
+            dataSources {
+                id
+                url
+                localPath
+                title
+                yearId
+                published
+                notes
+                dataType
+                docType
+            }
         }
     }
 `;

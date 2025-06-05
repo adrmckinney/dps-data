@@ -1,0 +1,4 @@
+type AchievementData {
+    id: String!
+    name: String!
+}

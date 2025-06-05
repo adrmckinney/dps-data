@@ -1,3 +1,4 @@
+import { getOriginalErrorMessage } from '@/errors/errorHelpers.ts';
 import type { DataSource } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { DBError } from '../errors/AppError.ts';
@@ -15,6 +16,15 @@ export const DataSourceRepo = {
             }
 
             throw new DBError('Failed to create PDF source', error);
+        }
+    },
+
+    async getAllDataSources(): Promise<DataSource[]> {
+        try {
+            return prisma.dataSource.findMany();
+        } catch (error: unknown) {
+            const originalMsg = getOriginalErrorMessage(error);
+            throw new DBError('DB error fetching all disciplines', originalMsg);
         }
     },
 };
