@@ -1,5 +1,5 @@
 import type { DataSource, School, Year } from '@prisma/client';
-import { DataType, DocType, Prisma } from '@prisma/client';
+import { DataSet, DocType, Prisma } from '@prisma/client';
 import { AppError, InternalServerError, NotFoundError } from '../../errors/AppError.ts';
 import {
     buildGradePopulationSortOrder,
@@ -83,7 +83,7 @@ export const PopulationService = {
             year: { connect: { id: year.id } },
             published: year.endYear,
             notes: 'Two tables in one PDF. One table is Membership by Grade and the other is Membership by School, Ethnicity, Gender',
-            dataType: DataType.POPULATION,
+            dataType: DataSet.POPULATION,
             docType: DocType.PDF,
         };
 

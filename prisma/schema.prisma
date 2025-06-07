@@ -31,15 +31,17 @@ model Year {
 }
 
 model Grade {
-  id              Int               @id @default(autoincrement())
-  name            String            @unique
-  alternativeName String            @unique
-  abbreviation    String            @unique
+  id              Int    @id @default(autoincrement())
+  name            String @unique
+  alternativeName String @unique
+  abbreviation    String @unique
   levelId         Int
+
   level           Level             @relation(fields: [levelId], references: [id])
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
   GradePopulation GradePopulation[]
+  GradeToDataSet  GradeToDataSet[]
 }
 
 model Level {
@@ -49,17 +51,22 @@ model Level {
   schools      School[]
   subjects     Subject[]
   grade        Grade[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  LevelToDataSet LevelToDataSet[]
 }
 
 model School {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @unique
-  code               Int                  @unique
-  abbreviation       String
-  otherNames         String[]
-  levelId            Int
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  code         Int      @unique
+  abbreviation String
+  otherNames   String[]
+  levelId      Int
+  founded      Int
+  closed       Int?
+
   level              Level                @relation(fields: [levelId], references: [id])
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
@@ -69,20 +76,23 @@ model School {
 }
 
 model Discipline {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
-  abbreviation String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  abbreviation        String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @default(now()) @updatedAt
+  DisciplineToDataSet DisciplineToDataSet[]
 }
 
 model Subject {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  levelId   Int
-  level     Level    @relation(fields: [levelId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  levelId Int
+
+  level            Level              @relation(fields: [levelId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now()) @updatedAt
+  SubjectToDataSet SubjectToDataSet[]
 }
 
 model SubGroupType {
@@ -94,55 +104,146 @@ model SubGroupType {
 }
 
 model SubGroup {
-  id                    Int          @id @default(autoincrement())
-  name                  String       @unique // e.g., "Black Male", "All Male", "Students with Disabilities"
-  abbreviation          String       @unique // e.g., "BM", "M", "SWD"
-  typeId                Int
-  key                   String       @unique
-  secondaryKey          String       @unique
-  type                  SubGroupType @relation(fields: [typeId], references: [id])
-  availableForDataTypes DataType[]
+  id           Int          @id @default(autoincrement())
+  name         String       @unique // e.g., "Black Male", "All Male", "Students with Disabilities"
+  abbreviation String       @unique // e.g., "BM", "M", "SWD"
+  typeId       Int
+  key          String       @unique
+  secondaryKey String       @unique
+  type         SubGroupType @relation(fields: [typeId], references: [id])
 
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   SubgroupPopulation SubgroupPopulation[]
+  dataSets           SubGroupToDataSet[]
 }
 
-// ************************************************************
-// |                    DYNAMIC MODELS                        |
-// ************************************************************
-enum DataType {
-  POPULATION
-  ACHIEVEMENT_OVERALL
-  ACHIEVEMENT_SUBGROUPS
-  DISCIPLINE_OVERALL
-  DISCIPLINE_SUBGROUPS
-  OTHER
+model DataSet {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  label       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  subGroups   SubGroupToDataSet[]
+  dataSources DataSourceToDataSet[]
+  levels      LevelToDataSet[]
+  subjects    SubjectToDataSet[]
+  grades      GradeToDataSet[]
+  disciplines DisciplineToDataSet[]
 }
 
-enum DocType {
-  PDF
-  CSV
+model SubGroupToDataSet {
+  id         Int      @id @default(autoincrement())
+  subGroupId Int
+  dataSetId  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  subGroup SubGroup @relation(fields: [subGroupId], references: [id])
+  dataSet  DataSet  @relation(fields: [dataSetId], references: [id])
+
+  @@unique([subGroupId, dataSetId])
+}
+
+model LevelToDataSet {
+  id        Int      @id @default(autoincrement())
+  levelId   Int
+  dataSetId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  level   Level   @relation(fields: [levelId], references: [id])
+  dataSet DataSet @relation(fields: [dataSetId], references: [id])
+
+  @@unique([levelId, dataSetId])
+}
+
+model SubjectToDataSet {
+  id        Int      @id @default(autoincrement())
+  subjectId Int
+  dataSetId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  subject Subject @relation(fields: [subjectId], references: [id])
+  dataSet DataSet @relation(fields: [dataSetId], references: [id])
+
+  @@unique([subjectId, dataSetId])
+}
+
+model GradeToDataSet {
+  id        Int      @id @default(autoincrement())
+  gradeId   Int
+  dataSetId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  grade   Grade   @relation(fields: [gradeId], references: [id])
+  dataSet DataSet @relation(fields: [dataSetId], references: [id])
+
+  @@unique([gradeId, dataSetId])
+}
+
+model DisciplineToDataSet {
+  id           Int      @id @default(autoincrement())
+  disciplineId Int
+  dataSetId    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  discipline Discipline @relation(fields: [disciplineId], references: [id])
+  dataSet    DataSet    @relation(fields: [dataSetId], references: [id])
+
+  @@unique([disciplineId, dataSetId])
+}
+
+model DataSourceType {
+  id         Int          @id @default(autoincrement())
+  type       String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
+  DataSource DataSource[]
 }
 
 model DataSource {
-  id        Int      @id @default(autoincrement())
-  url       String   @unique // original external URL
-  localPath String? // optional path to backup (e.g., /pdfs/population_2024.pdf)
-  title     String?
-  yearId    Int?
-  published String?
-  notes     String?
-  dataType  DataType
-  docType   DocType
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int     @id @default(autoincrement())
+  url        String  @unique
+  localPath  String?
+  title      String?
+  yearId     Int?
+  published  String?
+  notes      String?
+  dataTypeId Int
 
-  year               Year?                @relation(fields: [yearId], references: [id])
+  dataType  DataSourceType @relation(fields: [dataTypeId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  year               Year?                 @relation(fields: [yearId], references: [id])
   GradePopulation    GradePopulation[]
   PopulationSnapshot PopulationSnapshot[]
   SubgroupPopulation SubgroupPopulation[]
+  dataSets           DataSourceToDataSet[]
 }
+
+model DataSourceToDataSet {
+  id           Int      @id @default(autoincrement())
+  dataSourceId Int
+  dataSetId    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  dataSource DataSource @relation(fields: [dataSourceId], references: [id])
+  dataSet    DataSet    @relation(fields: [dataSetId], references: [id])
+
+  @@unique([dataSetId, dataSourceId])
+}
+
+// ************************************************************
+// |                     OTHER MODELS                         |
+// ************************************************************
 
 // Normalized model of school populations where each school grade gets its own record per year
 // Good for query population by school, year, and grade independently, query population by school, 

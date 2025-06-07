@@ -7,6 +7,8 @@ type SchoolList = {
     abbreviation: string;
     otherNames: string[];
     levelId: LevelEnumValue;
+    founded: number;
+    closed: number | null;
 };
 
 export const ELEMENTARY_SCHOOLS: SchoolList[] = [
@@ -16,6 +18,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Bethesda',
         otherNames: ['Bethesda ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Burton',
@@ -23,6 +27,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Burton',
         otherNames: ['Burton ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'C. C. Spaulding',
@@ -30,6 +36,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'C. C. Spaulding',
         otherNames: ['C C Spaulding', 'C C Spaulding ES', 'Spaulding'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Club Boulevard',
@@ -37,6 +45,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Club Boulevard',
         otherNames: ['Club Boulevard ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Creekside',
@@ -44,6 +54,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Creekside',
         otherNames: ['Creekside ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Eastway',
@@ -51,6 +63,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Eastway',
         otherNames: ['Eastway ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Easley',
@@ -58,6 +72,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Easley',
         otherNames: ['Easley ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'E.K. Powe',
@@ -65,6 +81,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'E.K. Powe',
         otherNames: ['E.K. Powe ES', 'E K Powe'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Eno Valley',
@@ -72,6 +90,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Eno Valley',
         otherNames: ['Eno Valley ES', 'Eno Valley'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Fayetteville Street',
@@ -79,6 +99,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Fayetteville Street',
         otherNames: ['Fayetteville Street ES', 'Fayetteville'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Forest View',
@@ -86,6 +108,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Forest View',
         otherNames: ['Forest View ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Glenn',
@@ -93,6 +117,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Glenn',
         otherNames: ['Glenn ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Hillandale',
@@ -100,6 +126,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Hillandale',
         otherNames: ['Hillandale ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Holt',
@@ -107,6 +135,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Holt',
         otherNames: ['Holt ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Hope Valley',
@@ -114,6 +144,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Hope Valley',
         otherNames: ['Hope Valley ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Lakewood',
@@ -121,6 +153,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Lakewood',
         otherNames: ['Lakewood ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Lyons Farm',
@@ -128,6 +162,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Lyons Farm',
         otherNames: ['Lyons Farm ES'],
         levelId: levels.elementary.value,
+        founded: 2022,
+        closed: null,
     },
     {
         name: 'Mangum Elementary',
@@ -135,6 +171,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Mangum Elementary',
         otherNames: ['Mangum Elementary ES', 'Mangum'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Merrick-Moore',
@@ -142,6 +180,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Merrick-Moore',
         otherNames: ['Merrick-Moore ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Morehead Montessori',
@@ -149,6 +189,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Morehead Montessori',
         otherNames: ['Morehead Montessori ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Murray-Massenburg',
@@ -156,6 +198,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Murray-Massenburg',
         otherNames: ['Murray-Massenburg ES'],
         levelId: levels.elementary.value,
+        founded: 2024,
+        closed: null,
     },
     {
         name: 'Oak Grove',
@@ -163,6 +207,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Oak Grove',
         otherNames: ['Oak Grove ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Parkwood',
@@ -170,6 +216,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Parkwood',
         otherNames: ['Parkwood ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'W.G. Pearson',
@@ -177,6 +225,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'W.G. Pearson',
         otherNames: ['W.G. Pearson ES', 'W G Pearson'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Pearsontown',
@@ -184,6 +234,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Pearsontown',
         otherNames: ['Pearsontown ES', 'Pearsontown'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'R.N. Harris',
@@ -191,6 +243,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'R.N. Harris',
         otherNames: ['R.N. Harris ES', 'R N Harris'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Sandy Ridge',
@@ -198,6 +252,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Sandy Ridge',
         otherNames: ['Sandy Ridge ES'],
         levelId: levels.elementary.value,
+        founded: 2011,
+        closed: null,
     },
     {
         name: 'Southwest',
@@ -205,6 +261,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Southwest',
         otherNames: ['Southwest MS'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Spring Valley',
@@ -212,6 +270,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Spring Valley',
         otherNames: ['Spring Valley ES'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Watts',
@@ -219,6 +279,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Watts',
         otherNames: ['Watts ES', 'George Watts'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Y.E. Smith',
@@ -226,6 +288,8 @@ export const ELEMENTARY_SCHOOLS: SchoolList[] = [
         abbreviation: 'Y.E. Smith',
         otherNames: ['Y.E. Smith ES', 'Y E Smith'],
         levelId: levels.elementary.value,
+        founded: 2010,
+        closed: null,
     },
 ];
 
@@ -236,6 +300,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Brogden',
         otherNames: ['Brogden MS'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Carrington',
@@ -243,6 +309,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Carrington',
         otherNames: ['Carrington MS'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Githens',
@@ -250,6 +318,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Githens',
         otherNames: ['Githens MS', 'Sherwood Githens'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Lakewood Montessori',
@@ -257,6 +327,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Lakewood Montessori',
         otherNames: ['Lakewood Montessori MS', 'Lakewood Middle'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Little River',
@@ -264,6 +336,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Little River',
         otherNames: ['Little River MS'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Lowes Grove',
@@ -271,6 +345,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Lowes Grove',
         otherNames: ['Lowes Grove MS', "Lowe's Grove"],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Lucas',
@@ -278,6 +354,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Lucas',
         otherNames: ['Lucas MS'],
         levelId: levels.middleSchool.value,
+        founded: 2012,
+        closed: null,
     },
     {
         name: 'Neal',
@@ -285,6 +363,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Neal',
         otherNames: ['Neal MS'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Rogers-Herr',
@@ -292,6 +372,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Rogers-Herr',
         otherNames: ['Rogers-Herr MS'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Shepard',
@@ -299,6 +381,8 @@ export const MIDDLE_SCHOOLS: SchoolList[] = [
         abbreviation: 'Shepard',
         otherNames: ['Shepard MS'],
         levelId: levels.middleSchool.value,
+        founded: 2010,
+        closed: null,
     },
 ];
 
@@ -309,6 +393,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'CMA',
         otherNames: ['City of Medicine HS', 'City of Med'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Clement Early College',
@@ -316,6 +402,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'ECHS',
         otherNames: ['Clement Early College HS', 'Clement'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Creative Studies',
@@ -323,6 +411,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'SCS',
         otherNames: ['Creative Studies HS', 'School for Creative Studies'],
         levelId: levels.highSchool.value,
+        founded: 2014,
+        closed: null,
     },
     {
         name: 'Durham School of the Arts',
@@ -330,6 +420,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'DSA',
         otherNames: ['DSA HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Hillside',
@@ -337,6 +429,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'HHS',
         otherNames: ['Hillside HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Durham School of Technology',
@@ -344,13 +438,17 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'DST',
         otherNames: ['Hillside New Tech', 'Hillside Tech'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Hospital School',
         code: 320336,
         abbreviation: 'HSHS',
-        otherNames: ['Hospital School HS'],
+        otherNames: ['Hospital School HS', 'DUMC'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'IGNITE',
@@ -358,6 +456,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'IGNITE',
         otherNames: ['IGNITE Academy'],
         levelId: levels.highSchool.value,
+        founded: 2021,
+        closed: null,
     },
     {
         name: 'Jordan',
@@ -365,6 +465,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'JHS',
         otherNames: ['Jordan HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Lakeview',
@@ -372,6 +474,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'LHS',
         otherNames: ['Lakeview HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Middle College',
@@ -379,6 +483,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'MCHS',
         otherNames: ['Middle College HS', 'Midd College'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Northern',
@@ -386,6 +492,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'NHS',
         otherNames: ['Northern HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Performance Learning Ctr',
@@ -393,6 +501,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'PLC',
         otherNames: ['Performance Learning Ctr HS', 'Performance Learning Center'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Riverside',
@@ -400,6 +510,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'RHS',
         otherNames: ['Riverside HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
     {
         name: 'Southern',
@@ -407,6 +519,8 @@ export const HIGH_SCHOOLS: SchoolList[] = [
         abbreviation: 'SHS',
         otherNames: ['Southern HS'],
         levelId: levels.highSchool.value,
+        founded: 2010,
+        closed: null,
     },
 ];
 

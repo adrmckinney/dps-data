@@ -1,13 +1,17 @@
-import { DataType, SubGroup } from '@prisma/client';
+import { DataSet, SubGroup } from '@prisma/client';
 
-type DataTypeEnum = Record<DataType, DataTypeEnumObjects>;
+type DataTypeEnum = Record<DataSet, DataTypeEnumObjects>;
 type DataTypeEnumObjects = {
     id: number;
     label: string;
 };
 
 export const DataTypeEnums: DataTypeEnum = {
-    POPULATION: {
+    POPULATION_GRADE: {
+        id: 1,
+        label: 'Population',
+    },
+    POPULATION_SUBGROUP: {
         id: 1,
         label: 'Population',
     },
@@ -33,20 +37,20 @@ export const DataTypeEnums: DataTypeEnum = {
     },
 };
 
-export const getKeyFromCategoryId = (categoryIds: number): DataType => {
-    let returnKey: DataType = 'OTHER';
+export const getKeyFromCategoryId = (categoryIds: number): DataSet => {
+    let returnKey: DataSet = 'OTHER';
     Object.entries(DataTypeEnums).forEach(entry => {
         const [key, value] = entry;
         if (value.id === categoryIds) {
-            returnKey = key as DataType;
+            returnKey = key as DataSet;
             return;
         }
     });
     return returnKey;
 };
 
-export const getKeysFromCategoryIds = (subgroupIds: Set<number> | undefined): DataType[] => {
-    const returnKeys: DataType[] = [];
+export const getKeysFromCategoryIds = (subgroupIds: Set<number> | undefined): DataSet[] => {
+    const returnKeys: DataSet[] = [];
     if (!subgroupIds) return returnKeys;
 
     subgroupIds.forEach(id => {
@@ -69,7 +73,7 @@ export const applySubgroup = (
         return false; // Hide if nothing is available
     }
 
-    // Convert DataType[] to the corresponding enum numeric IDs
+    // Convert DataSet[] to the corresponding enum numeric IDs
     const availableTypeIds = availableTypes.map(type => DataTypeEnums[type].id);
 
     return availableTypeIds.some(id => selectedCategoryIds.has(id));
