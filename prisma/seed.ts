@@ -1,4 +1,3 @@
-import type { DataSet } from '@prisma/client';
 import { DATA_SETS_SEED } from '../constants/DataSetList.ts';
 import { DATA_SOURCE_TYPES_SEED } from '../constants/DataTypeList.ts';
 import { disciplines as disciplineList, DISCIPLINES_SEED } from '../constants/DisciplineList.ts';
@@ -23,7 +22,7 @@ import { SubgroupService } from '../services/subgroupService.ts';
 import { SubGroupToDataSetService } from '../services/subGroupToDataSetService.ts';
 import { SubjectService } from '../services/subjectService.ts';
 import { YearService } from '../services/yearService.ts';
-import type { DataSetKeys } from '../types/dataSetKeys.ts';
+import { insertDataSetPivotRows } from '../utils/pivotHelpers.ts';
 
 async function main() {
     await prisma.dataSourceType.createMany({ data: DATA_SOURCE_TYPES_SEED, skipDuplicates: true });
@@ -93,41 +92,29 @@ async function main() {
     console.log('🌱 Database seeded');
 }
 
-type ConstList = {
-    name: string;
-    dataSets: DataSetKeys[];
-    [key: string]: unknown;
-};
+// async function insertDataSetPivotRows<T extends string>(
+//     dataSets: DataSet[],
+//     filterSets: FilterSets[],
+//     constList: ConstList[],
+//     filterKey: T,
+//     serviceFn: (input: { [K in T]: number } & { dataSetId: number }) => Promise<void>
+// ) {
+//     for (let i = 0; i < filterSets.length; i++) {
+//         const targetDataSetKeys: DataSetKeys[] | undefined = constList.find(
+//             l => l.name === filterSets[i].name
+//         )?.dataSets;
+//         if (!targetDataSetKeys) continue;
+//         const filterId = filterSets[i].id;
+//         for (const dataSetKey of targetDataSetKeys) {
+//             const dataSetId = dataSets.find(ds => ds.key === dataSetKey)?.id;
+//             if (!filterId || !dataSetId) continue;
 
-type FilterSets = {
-    id: number;
-    name: string;
-    [key: string]: unknown;
-};
-
-async function insertDataSetPivotRows<T extends string>(
-    dataSets: DataSet[],
-    filterSets: FilterSets[],
-    constList: ConstList[],
-    filterKey: T,
-    serviceFn: (input: { [K in T]: number } & { dataSetId: number }) => Promise<void>
-) {
-    for (let i = 0; i < filterSets.length; i++) {
-        const targetDataSetKeys: DataSetKeys[] | undefined = constList.find(
-            l => l.name === filterSets[i].name
-        )?.dataSets;
-        if (!targetDataSetKeys) continue;
-        const filterId = filterSets[i].id;
-        for (const dataSetKey of targetDataSetKeys) {
-            const dataSetId = dataSets.find(ds => ds.key === dataSetKey)?.id;
-            if (!filterId || !dataSetId) continue;
-
-            await serviceFn({ [filterKey]: filterId, dataSetId } as { [K in T]: number } & {
-                dataSetId: number;
-            });
-        }
-    }
-}
+//             await serviceFn({ [filterKey]: filterId, dataSetId } as { [K in T]: number } & {
+//                 dataSetId: number;
+//             });
+//         }
+//     }
+// }
 
 main()
     .then(async () => {

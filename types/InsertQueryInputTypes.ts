@@ -30,3 +30,8 @@ export type FlatSubjectToDataSetCreateInput = {
     subjectId: number;
     dataSetId: number;
 };
+
+export type FlatDataSourceToDataSetCreateInput = {
+    dataSourceId: number;
+    dataSetId: number;
+};

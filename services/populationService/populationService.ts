@@ -1,5 +1,5 @@
-import type { DataSource, School, Year } from '@prisma/client';
-import { DataSet, DocType, Prisma } from '@prisma/client';
+import type { DataSource, DataSourceType, School, Year } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { AppError, InternalServerError, NotFoundError } from '../../errors/AppError.ts';
 import {
     buildGradePopulationSortOrder,
@@ -10,6 +10,7 @@ import {
     buildSubgroupPopulationWhereClause,
 } from '../../filters/subgroupPopulationFilterBuilder.ts';
 import { DataSourceRepo } from '../../repos/dataSourceRepo.ts';
+import { DataSourceTypesRepo } from '../../repos/dataSourceTypesRepo.ts';
 import { GradePopulationRepo } from '../../repos/gradePopulationRepo.ts';
 import { GradeRepo } from '../../repos/gradeRepo.ts';
 import { PopulationSnapshotRepo } from '../../repos/populationSnapshotRepo.ts';
@@ -20,6 +21,8 @@ import { YearRepo } from '../../repos/yearRepo.ts';
 import type { RawPopulationData } from '../../types/population.ts';
 import type { QueryFilterPayload } from '../../types/queryFilters.ts';
 import { tryCatch, tryCatchSync } from '../../utils/tryCatch.ts';
+import { DataSetService } from '../dataSetService.ts';
+import { DataSourceToDataSetService } from '../dataSourceToDataSetService.ts';
 import { byGradeParser } from './parsers/byGradeParser.ts';
 import { bySubgroupParser } from './parsers/bySubgroupParser.ts';
 import { snapShotParser } from './parsers/snapshotParser.ts';
@@ -76,6 +79,27 @@ export const PopulationService = {
             },
         });
 
+        const dataTypes = await tryCatch<DataSourceType[]>({
+            tryFn: async () => {
+                const response = await DataSourceTypesRepo.getAllDataSourceTypes();
+                if (!response) {
+                    throw new NotFoundError(
+                        `No dataSourceTypes record found. DB has likely not been seeded.`
+                    );
+                }
+                return response;
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in PopulationService fetching dataSourceTypes',
+                    error
+                );
+            },
+        });
+
         const dataSource: Prisma.DataSourceCreateInput = {
             url: linkData.url,
             localPath: null,
@@ -83,8 +107,7 @@ export const PopulationService = {
             year: { connect: { id: year.id } },
             published: year.endYear,
             notes: 'Two tables in one PDF. One table is Membership by Grade and the other is Membership by School, Ethnicity, Gender',
-            dataType: DataSet.POPULATION,
-            docType: DocType.PDF,
+            dataType: { connect: { id: dataTypes.find(dt => dt.type === 'PDF')?.id } },
         };
 
         const schools = await tryCatch<School[]>({
@@ -105,6 +128,18 @@ export const PopulationService = {
                 throw error;
             },
         });
+
+        const targetDataSets = await DataSetService.getDataSetsByKeys([
+            'POPULATION_GRADE',
+            'POPULATION_SUBGROUP',
+        ]);
+        const input: Prisma.DataSourceToDataSetCreateManyInput[] = targetDataSets.map(ds => {
+            return {
+                dataSetId: ds.id,
+                dataSourceId: dataSourceResponse.id,
+            };
+        });
+        await DataSourceToDataSetService.createDataSourceToDataSetRecords(input);
 
         const preparedSnapshotData = tryCatchSync({
             tryFn: () => {

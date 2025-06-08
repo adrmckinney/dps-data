@@ -40,8 +40,8 @@ model Grade {
   level           Level             @relation(fields: [levelId], references: [id])
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
-  GradePopulation GradePopulation[]
   GradeToDataSet  GradeToDataSet[]
+  GradePopulation GradePopulation[]
 }
 
 model Level {
@@ -114,8 +114,8 @@ model SubGroup {
 
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
-  SubgroupPopulation SubgroupPopulation[]
   dataSets           SubGroupToDataSet[]
+  SubgroupPopulation SubgroupPopulation[]
 }
 
 model DataSet {
@@ -222,10 +222,10 @@ model DataSource {
   updatedAt DateTime       @updatedAt
 
   year               Year?                 @relation(fields: [yearId], references: [id])
-  GradePopulation    GradePopulation[]
-  PopulationSnapshot PopulationSnapshot[]
-  SubgroupPopulation SubgroupPopulation[]
   dataSets           DataSourceToDataSet[]
+  GradePopulation    GradePopulation[]
+  SubgroupPopulation SubgroupPopulation[]
+  PopulationSnapshot PopulationSnapshot[]
 }
 
 model DataSourceToDataSet {

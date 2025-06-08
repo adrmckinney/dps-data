@@ -28,7 +28,16 @@ export const DataSetRepo = {
             return prisma.dataSet.findUnique({ where: { key } });
         } catch (error: unknown) {
             const originalMsg = getOriginalErrorMessage(error);
-            throw new DBError('DB error fetching data set by key', originalMsg);
+            throw new DBError('DB error fetching dataSet by key', originalMsg);
+        }
+    },
+
+    async getDataSetByKeys(keys: DataSetKeys[]): Promise<DataSet[] | null> {
+        try {
+            return prisma.dataSet.findMany({ where: { key: { in: keys } } });
+        } catch (error: unknown) {
+            const originalMsg = getOriginalErrorMessage(error);
+            throw new DBError(`DB error fetching dataSets by keys ${keys}`, originalMsg);
         }
     },
 

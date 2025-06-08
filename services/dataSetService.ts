@@ -76,6 +76,29 @@ export const DataSetService = {
         return response;
     },
 
+    async getDataSetsByKeys(keys: DataSetKeys[]): Promise<DataSet[]> {
+        const response = await tryCatch({
+            tryFn: async () => {
+                return DataSetRepo.getDataSetByKeys(keys);
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in DataSetService getDataSetsByKeys',
+                    error
+                );
+            },
+        });
+
+        if (!response) {
+            throw new NotFoundError(`DataSet keys ${keys} not found.`);
+        }
+
+        return response;
+    },
+
     async createDataSet(dataSetInput: Prisma.DataSetCreateInput): Promise<DataSet> {
         DataSetSchema.parse(dataSetInput);
 
