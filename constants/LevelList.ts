@@ -1,10 +1,11 @@
 import { Prisma } from '@prisma/client';
+import type { DataSetKeys } from '../types/dataSetKeys.ts';
 
-type Level = {
+export type Level = {
     name: string;
     abbreviation: string;
     value: number;
-    availableForDataTypes: string[];
+    dataSets: DataSetKeys[];
 };
 
 export const levels: Record<string, Level> = {
@@ -12,37 +13,32 @@ export const levels: Record<string, Level> = {
         name: 'Elementary',
         abbreviation: 'Elem',
         value: 1,
-        availableForDataTypes: ['POPULATION_GRADE'],
+        dataSets: ['POPULATION_GRADE'],
     },
     middleSchool: {
         name: 'Middle School',
         abbreviation: 'MS',
         value: 2,
-        availableForDataTypes: ['POPULATION_GRADE'],
+        dataSets: ['POPULATION_GRADE'],
     },
     highSchool: {
         name: 'High School',
         abbreviation: 'HS',
         value: 3,
-        availableForDataTypes: ['POPULATION_GRADE'],
+        dataSets: ['POPULATION_GRADE'],
     },
     unknown: {
         name: 'Unknown',
         abbreviation: 'unknown',
         value: 4,
-        availableForDataTypes: ['POPULATION_GRADE'],
+        dataSets: ['POPULATION_GRADE'],
     },
 } as const;
 
 export const LEVELS_SEED: Prisma.LevelCreateManyInput[] = Object.values(levels).map(
-    ({
+    ({ name, abbreviation }) => ({
         name,
         abbreviation,
-        // availableForDataTypes
-    }) => ({
-        name,
-        abbreviation,
-        // availableForDataTypes,
     })
 );
 

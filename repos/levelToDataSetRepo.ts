@@ -1,7 +1,8 @@
-import { DBError } from '@/errors/AppError.ts';
-import { getOriginalErrorMessage } from '@/errors/errorHelpers.ts';
 import type { LevelToDataSet, Prisma } from '@prisma/client';
+import { DBError } from '../errors/AppError.ts';
+import { getOriginalErrorMessage } from '../errors/errorHelpers.ts';
 import { prisma } from '../lib/prisma.ts';
+import type { FlatLevelToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
 
 export const LevelToDataSetRepo = {
     async getAllLevelToDataSetRecords(): Promise<LevelToDataSet[]> {
@@ -30,9 +31,7 @@ export const LevelToDataSetRepo = {
         }
     },
 
-    async createLevelToDataSetRecord(
-        data: Prisma.LevelToDataSetCreateInput
-    ): Promise<LevelToDataSet> {
+    async createLevelToDataSetRecord(data: FlatLevelToDataSetCreateInput): Promise<LevelToDataSet> {
         try {
             return await prisma.levelToDataSet.create({ data });
         } catch (error: unknown) {

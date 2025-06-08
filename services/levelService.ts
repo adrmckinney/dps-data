@@ -1,6 +1,6 @@
-import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError';
-import { LevelRepo } from '@/repos/levelRepo';
-import { tryCatch } from '@/utils/tryCatch';
+import { AppError, InternalServerError, NotFoundError } from '../errors/AppError.ts';
+import { LevelRepo } from '../repos/levelRepo.ts';
+import { tryCatch } from '../utils/tryCatch.ts';
 
 export const LevelService = {
     async getLevels() {

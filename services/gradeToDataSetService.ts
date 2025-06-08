@@ -1,4 +1,4 @@
-import type { LevelToDataSet } from '@prisma/client';
+import type { GradeToDataSet } from '@prisma/client';
 import {
     AppError,
     BadRequestError,
@@ -6,50 +6,50 @@ import {
     NotFoundError,
 } from '../errors/AppError.ts';
 import { DataSetRepo } from '../repos/dataSetRepo.ts';
-import { LevelRepo } from '../repos/levelRepo.ts';
-import { LevelToDataSetRepo } from '../repos/levelToDataSetRepo.ts';
-import type { FlatLevelToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
+import { GradeRepo } from '../repos/gradeRepo.ts';
+import { GradeToDataSetRepo } from '../repos/gradeToDataSetRepo.ts';
+import type { FlatGradeToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
 import { tryCatch } from '../utils/tryCatch.ts';
-import { LevelToDataSetSchema } from '../validations/levelToDataSet.schema.ts';
+import { GradeToDataSetSchema } from '../validations/gradeToDataSet.schema.ts';
 
-export const LevelToDataSetService = {
-    async getLevelToDataSetRecords(): Promise<LevelToDataSet[]> {
+export const GradeToDataSetService = {
+    async getGradeToDataSetRecords(): Promise<GradeToDataSet[]> {
         const response = await tryCatch({
             tryFn: async () => {
-                return LevelToDataSetRepo.getAllLevelToDataSetRecords();
+                return GradeToDataSetRepo.getAllGradeToDataSetRecords();
             },
             catchFn: error => {
                 if (error instanceof AppError) {
                     throw error;
                 }
                 throw new InternalServerError(
-                    'Unexpected error in LevelToDataSetService getLevelToDataSetRecords',
+                    'Unexpected error in GradeToDataSetService getGradeToDataSetRecords',
                     error
                 );
             },
         });
 
         if (response.length === 0) {
-            throw new NotFoundError('LevelToDataSets not found. DB has likely not been seeded.');
+            throw new NotFoundError('GradesToDataSets not found. DB has likely not been seeded.');
         }
 
         return response;
     },
 
-    async getLevelToDataSetByLevelIdAndDataSetId(
-        levelId: number,
+    async getGradeToDataSetBySubGroupIdAndDataSetId(
+        gradeId: number,
         dataSetId: number
-    ): Promise<LevelToDataSet> {
+    ): Promise<GradeToDataSet> {
         const response = await tryCatch({
             tryFn: async () => {
-                return LevelToDataSetRepo.getByLevelIdAndDataSetId(levelId, dataSetId);
+                return GradeToDataSetRepo.getByGradeIdAndDataSetId(gradeId, dataSetId);
             },
             catchFn: error => {
                 if (error instanceof AppError) {
                     throw error;
                 }
                 throw new InternalServerError(
-                    'Unexpected error in LevelToDataSetService getLevelToDataSetRecords',
+                    'Unexpected error in GradeToDataSetService getGradeToDataSetRecords',
                     error
                 );
             },
@@ -57,32 +57,32 @@ export const LevelToDataSetService = {
 
         if (!response) {
             throw new NotFoundError(
-                `LevelToDataSets not found for levelId ${levelId} and dataSetId ${dataSetId}.`
+                `GradeToDataSets not found for gradeId ${gradeId} and dataSetId ${dataSetId}.`
             );
         }
 
         return response;
     },
 
-    async createLevelToDataSet(input: FlatLevelToDataSetCreateInput): Promise<LevelToDataSet> {
-        LevelToDataSetSchema.parse(input);
+    async createGradeToDataSet(input: FlatGradeToDataSetCreateInput): Promise<GradeToDataSet> {
+        GradeToDataSetSchema.parse(input);
 
-        const levelId = input?.levelId;
+        const gradeId = input?.gradeId;
         const dataSetId = input?.dataSetId;
 
-        if (!levelId || !dataSetId) {
+        if (!gradeId || !dataSetId) {
             throw new BadRequestError(
-                `Missing levelId ${levelId} or dataSetId ${dataSetId} in input`
+                `Missing gradeId ${gradeId} or dataSetId ${dataSetId} in input`
             );
         }
 
-        const [level, dataSet] = await Promise.all([
-            LevelRepo.getById(levelId),
+        const [grade, dataSet] = await Promise.all([
+            GradeRepo.getById(gradeId),
             DataSetRepo.getDataSetById(dataSetId),
         ]);
 
-        if (!level) {
-            throw new NotFoundError(`Level with ID ${levelId} not found`);
+        if (!grade) {
+            throw new NotFoundError(`Grade with ID ${gradeId} not found`);
         }
 
         if (!dataSet) {
@@ -91,14 +91,14 @@ export const LevelToDataSetService = {
 
         const response = await tryCatch({
             tryFn: async () => {
-                return LevelToDataSetRepo.createLevelToDataSetRecord(input);
+                return GradeToDataSetRepo.createGradeToDataSetRecord(input);
             },
             catchFn: error => {
                 if (error instanceof AppError) {
                     throw error;
                 }
                 throw new InternalServerError(
-                    'Unexpected error in LevelToDataSetService createLevelToDataSet',
+                    'Unexpected error in GradeToDataSetService createGradeToDataSet',
                     error
                 );
             },

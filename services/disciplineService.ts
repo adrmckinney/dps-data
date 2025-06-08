@@ -1,6 +1,6 @@
-import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError';
-import { DisciplineRepo } from '@/repos/disciplineRepo';
-import { tryCatch } from '@/utils/tryCatch';
+import { AppError, InternalServerError, NotFoundError } from '../errors/AppError.ts';
+import { DisciplineRepo } from '../repos/disciplineRepo.ts';
+import { tryCatch } from '../utils/tryCatch.ts';
 
 export const DisciplineService = {
     async getDisciplines() {

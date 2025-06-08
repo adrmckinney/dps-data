@@ -1,6 +1,6 @@
-import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError';
-import { GradeRepo } from '@/repos/gradeRepo';
-import { tryCatch } from '@/utils/tryCatch';
+import { AppError, InternalServerError, NotFoundError } from '../errors/AppError.ts';
+import { GradeRepo } from '../repos/gradeRepo.ts';
+import { tryCatch } from '../utils/tryCatch.ts';
 
 export const GradeService = {
     async getGrades() {

@@ -1,4 +1,4 @@
-import type { LevelToDataSet } from '@prisma/client';
+import type { SubGroupToDataSet } from '@prisma/client';
 import {
     AppError,
     BadRequestError,
@@ -6,50 +6,50 @@ import {
     NotFoundError,
 } from '../errors/AppError.ts';
 import { DataSetRepo } from '../repos/dataSetRepo.ts';
-import { LevelRepo } from '../repos/levelRepo.ts';
-import { LevelToDataSetRepo } from '../repos/levelToDataSetRepo.ts';
-import type { FlatLevelToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
+import { SubgroupRepo } from '../repos/subgroupRepo.ts';
+import { subGroupToDataSetRepo } from '../repos/subGroupToDataSetRepo.ts';
+import type { FlatSubGroupToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
 import { tryCatch } from '../utils/tryCatch.ts';
-import { LevelToDataSetSchema } from '../validations/levelToDataSet.schema.ts';
+import { SubGroupToDataSetSchema } from '../validations/subGroupToDataSet.schema.ts';
 
-export const LevelToDataSetService = {
-    async getLevelToDataSetRecords(): Promise<LevelToDataSet[]> {
+export const SubGroupToDataSetService = {
+    async getSubgroupToDataSetRecords(): Promise<SubGroupToDataSet[]> {
         const response = await tryCatch({
             tryFn: async () => {
-                return LevelToDataSetRepo.getAllLevelToDataSetRecords();
+                return subGroupToDataSetRepo.getAllSubGroupToDataSetRecords();
             },
             catchFn: error => {
                 if (error instanceof AppError) {
                     throw error;
                 }
                 throw new InternalServerError(
-                    'Unexpected error in LevelToDataSetService getLevelToDataSetRecords',
+                    'Unexpected error in SubGroupToDataSetService getSubGroupToDataSetRecords',
                     error
                 );
             },
         });
 
         if (response.length === 0) {
-            throw new NotFoundError('LevelToDataSets not found. DB has likely not been seeded.');
+            throw new NotFoundError('SubGroupToDataSets not found. DB has likely not been seeded.');
         }
 
         return response;
     },
 
-    async getLevelToDataSetByLevelIdAndDataSetId(
-        levelId: number,
+    async getSubGroupToDataSetBySubGroupIdAndDataSetId(
+        subGroupId: number,
         dataSetId: number
-    ): Promise<LevelToDataSet> {
+    ): Promise<SubGroupToDataSet> {
         const response = await tryCatch({
             tryFn: async () => {
-                return LevelToDataSetRepo.getByLevelIdAndDataSetId(levelId, dataSetId);
+                return subGroupToDataSetRepo.getBySubGroupIdAndDataSetId(subGroupId, dataSetId);
             },
             catchFn: error => {
                 if (error instanceof AppError) {
                     throw error;
                 }
                 throw new InternalServerError(
-                    'Unexpected error in LevelToDataSetService getLevelToDataSetRecords',
+                    'Unexpected error in SubGroupToDataSetService getSubgroupToDataSetRecords',
                     error
                 );
             },
@@ -57,32 +57,34 @@ export const LevelToDataSetService = {
 
         if (!response) {
             throw new NotFoundError(
-                `LevelToDataSets not found for levelId ${levelId} and dataSetId ${dataSetId}.`
+                `SubGroupToDataSets not found for subGroupId ${subGroupId} and dataSetId ${dataSetId}.`
             );
         }
 
         return response;
     },
 
-    async createLevelToDataSet(input: FlatLevelToDataSetCreateInput): Promise<LevelToDataSet> {
-        LevelToDataSetSchema.parse(input);
+    async createSubGroupToDataSet(
+        input: FlatSubGroupToDataSetCreateInput
+    ): Promise<SubGroupToDataSet> {
+        SubGroupToDataSetSchema.parse(input);
 
-        const levelId = input?.levelId;
+        const subGroupId = input?.subGroupId;
         const dataSetId = input?.dataSetId;
 
-        if (!levelId || !dataSetId) {
+        if (!subGroupId || !dataSetId) {
             throw new BadRequestError(
-                `Missing levelId ${levelId} or dataSetId ${dataSetId} in input`
+                `Missing subGroupId ${subGroupId} or dataSetId ${dataSetId} in input`
             );
         }
 
-        const [level, dataSet] = await Promise.all([
-            LevelRepo.getById(levelId),
+        const [subGroup, dataSet] = await Promise.all([
+            SubgroupRepo.getSubgroupById(subGroupId),
             DataSetRepo.getDataSetById(dataSetId),
         ]);
 
-        if (!level) {
-            throw new NotFoundError(`Level with ID ${levelId} not found`);
+        if (!subGroup) {
+            throw new NotFoundError(`SubGroup with ID ${subGroupId} not found`);
         }
 
         if (!dataSet) {
@@ -91,7 +93,7 @@ export const LevelToDataSetService = {
 
         const response = await tryCatch({
             tryFn: async () => {
-                return LevelToDataSetRepo.createLevelToDataSetRecord(input);
+                return subGroupToDataSetRepo.createSubGroupToDataSetRecord(input);
             },
             catchFn: error => {
                 if (error instanceof AppError) {

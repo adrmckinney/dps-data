@@ -1,6 +1,6 @@
-import { AppError, InternalServerError, NotFoundError } from '@/errors/AppError';
-import { SubjectRepo } from '@/repos/subjectRepo';
-import { tryCatch } from '@/utils/tryCatch';
+import { AppError, InternalServerError, NotFoundError } from '../errors/AppError.ts';
+import { SubjectRepo } from '../repos/subjectRepo.ts';
+import { tryCatch } from '../utils/tryCatch.ts';
 
 export const SubjectService = {
     async getSubjects() {

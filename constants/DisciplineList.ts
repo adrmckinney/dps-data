@@ -1,8 +1,10 @@
+import type { DataSetKeys } from '../types/dataSetKeys';
+
 type Discipline = {
     name: string;
     abbreviation: string;
     value: number;
-    availableForDataTypes: string[];
+    dataSets: DataSetKeys[];
 };
 
 type DisciplineTypes = 'restorativePractice' | 'shortTermSuspension' | 'longTermSuspension';
@@ -12,19 +14,19 @@ export const disciplines: Record<DisciplineTypes, Discipline> = {
         name: 'Restorative Practice',
         abbreviation: 'RPC',
         value: 1,
-        availableForDataTypes: ['DISCIPLINE_OVERALL', 'DISCIPLINE_SUBGROUPS'],
+        dataSets: ['DISCIPLINE_OVERALL', 'DISCIPLINE_SUBGROUPS'],
     },
     shortTermSuspension: {
         name: 'Short Term Suspension',
         abbreviation: 'STS',
         value: 2,
-        availableForDataTypes: ['DISCIPLINE_OVERALL', 'DISCIPLINE_SUBGROUPS'],
+        dataSets: ['DISCIPLINE_OVERALL', 'DISCIPLINE_SUBGROUPS'],
     },
     longTermSuspension: {
         name: 'Long Term Suspension',
         abbreviation: 'LTS',
         value: 3,
-        availableForDataTypes: ['DISCIPLINE_OVERALL', 'DISCIPLINE_SUBGROUPS'],
+        dataSets: ['DISCIPLINE_OVERALL', 'DISCIPLINE_SUBGROUPS'],
     },
 } as const;
 
@@ -32,12 +34,10 @@ export const disciplines: Record<DisciplineTypes, Discipline> = {
 export const DISCIPLINES_SEED: {
     name: DisciplineEnumName;
     abbreviation: string;
-    // availableForDataTypes: string[];
 }[] = Object.values(disciplines).map(d => {
     return {
         name: d.name,
         abbreviation: d.abbreviation,
-        // availableForDataTypes: d.availableForDataTypes,
     };
 });
 
