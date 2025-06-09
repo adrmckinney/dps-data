@@ -1,4 +1,5 @@
-import type { SubGroupToDataSet } from '@prisma/client';
+import type { DataSet, Prisma, SubGroup, SubGroupToDataSet } from '@prisma/client';
+import { subGroupsList } from '../constants/SubGroupList.ts';
 import {
     AppError,
     BadRequestError,
@@ -9,6 +10,7 @@ import { DataSetRepo } from '../repos/dataSetRepo.ts';
 import { SubgroupRepo } from '../repos/subgroupRepo.ts';
 import { subGroupToDataSetRepo } from '../repos/subGroupToDataSetRepo.ts';
 import type { FlatSubGroupToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
+import { generateDataSetPivotInput } from '../utils/pivotHelpers.ts';
 import { tryCatch } from '../utils/tryCatch.ts';
 import { SubGroupToDataSetSchema } from '../validations/subGroupToDataSet.schema.ts';
 
@@ -91,6 +93,29 @@ export const SubGroupToDataSetService = {
             throw new NotFoundError(`DataSet with ID ${dataSetId} not found`);
         }
 
+        // Make sure the record doesn't already exist
+        const subGroupToDataSetExists = await tryCatch({
+            tryFn: async () => {
+                return subGroupToDataSetRepo.getBySubGroupIdAndDataSetId(subGroupId, dataSetId);
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in SubGroupToDataSetService getBySubGroupIdAndDataSetId',
+                    error
+                );
+            },
+        });
+
+        if (subGroupToDataSetExists) {
+            console.log(
+                `SubGroupToDataSetService with subGroupId ${subGroupId} and dataSetId ${dataSetId} already exists.\n Skipping create and returning existing...`
+            );
+            return subGroupToDataSetExists;
+        }
+
         const response = await tryCatch({
             tryFn: async () => {
                 return subGroupToDataSetRepo.createSubGroupToDataSetRecord(input);
@@ -106,5 +131,24 @@ export const SubGroupToDataSetService = {
             },
         });
         return response;
+    },
+
+    async createSubGroupToDataSetRecords(
+        dataSets: DataSet[],
+        subGroups: SubGroup[]
+    ): Promise<SubGroupToDataSet[]> {
+        const input = generateDataSetPivotInput<Prisma.SubGroupToDataSetCreateManyInput>(
+            dataSets,
+            subGroups,
+            subGroupsList,
+            'subGroupId'
+        );
+
+        const res = [];
+        for (const entry of input) {
+            const response = await this.createSubGroupToDataSet(entry);
+            res.push(response);
+        }
+        return res;
     },
 };

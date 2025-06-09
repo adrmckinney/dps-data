@@ -1,4 +1,6 @@
-import type { LevelToDataSet } from '@prisma/client';
+import type { DataSet, Level, LevelToDataSet, Prisma } from '@prisma/client';
+import type { Level as ConstLevelType } from '../constants/LevelList.ts';
+import { levels as ls } from '../constants/LevelList.ts';
 import {
     AppError,
     BadRequestError,
@@ -9,6 +11,7 @@ import { DataSetRepo } from '../repos/dataSetRepo.ts';
 import { LevelRepo } from '../repos/levelRepo.ts';
 import { LevelToDataSetRepo } from '../repos/levelToDataSetRepo.ts';
 import type { FlatLevelToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
+import { generateDataSetPivotInput } from '../utils/pivotHelpers.ts';
 import { tryCatch } from '../utils/tryCatch.ts';
 import { LevelToDataSetSchema } from '../validations/levelToDataSet.schema.ts';
 
@@ -89,6 +92,29 @@ export const LevelToDataSetService = {
             throw new NotFoundError(`DataSet with ID ${dataSetId} not found`);
         }
 
+        // Make sure the record doesn't already exist
+        const levelToDataSetExists = await tryCatch({
+            tryFn: async () => {
+                return LevelToDataSetRepo.getByLevelIdAndDataSetId(levelId, dataSetId);
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in LevelToDataSetService getByLevelIdAndDataSetId',
+                    error
+                );
+            },
+        });
+
+        if (levelToDataSetExists) {
+            console.log(
+                `LevelToDataSet with levelId ${levelId} and dataSetId ${dataSetId} already exists.\n Skipping create and returning existing...`
+            );
+            return levelToDataSetExists;
+        }
+
         const response = await tryCatch({
             tryFn: async () => {
                 return LevelToDataSetRepo.createLevelToDataSetRecord(input);
@@ -104,5 +130,25 @@ export const LevelToDataSetService = {
             },
         });
         return response;
+    },
+
+    async createLevelToDataSetRecords(
+        dataSets: DataSet[],
+        levels: Level[]
+    ): Promise<LevelToDataSet[]> {
+        const constLevels: ConstLevelType[] = Object.values(ls);
+        const input = generateDataSetPivotInput<Prisma.LevelToDataSetCreateManyInput>(
+            dataSets,
+            levels,
+            constLevels,
+            'levelId'
+        );
+
+        const res = [];
+        for (const entry of input) {
+            const response = await this.createLevelToDataSet(entry);
+            res.push(response);
+        }
+        return res;
     },
 };

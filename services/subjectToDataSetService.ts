@@ -1,4 +1,5 @@
-import type { SubjectToDataSet } from '@prisma/client';
+import type { DataSet, Prisma, Subject, SubjectToDataSet } from '@prisma/client';
+import { subjectList } from '../constants/SubjectList.ts';
 import {
     AppError,
     BadRequestError,
@@ -9,8 +10,9 @@ import { DataSetRepo } from '../repos/dataSetRepo.ts';
 import { SubjectRepo } from '../repos/subjectRepo.ts';
 import { SubjectToDataSetRepo } from '../repos/subjectToDataSetRepo.ts';
 import type { FlatSubjectToDataSetCreateInput } from '../types/InsertQueryInputTypes.ts';
+import { generateDataSetPivotInput } from '../utils/pivotHelpers.ts';
 import { tryCatch } from '../utils/tryCatch.ts';
-import { DisciplineToDataSetSchema } from '../validations/disciplineToDataSet.schema.ts';
+import { SubjectToDataSetSchema } from '../validations/subjectToDataSet.schema.ts';
 
 export const SubjectToDataSetService = {
     async getSubjectToDataSetRecords(): Promise<SubjectToDataSet[]> {
@@ -64,10 +66,10 @@ export const SubjectToDataSetService = {
         return response;
     },
 
-    async createDisciplineToDataSet(
+    async createSubjectToDataSet(
         input: FlatSubjectToDataSetCreateInput
     ): Promise<SubjectToDataSet> {
-        DisciplineToDataSetSchema.parse(input);
+        SubjectToDataSetSchema.parse(input);
 
         const subjectId = input?.subjectId;
         const dataSetId = input?.dataSetId;
@@ -91,6 +93,29 @@ export const SubjectToDataSetService = {
             throw new NotFoundError(`DataSet with ID ${dataSetId} not found`);
         }
 
+        // Make sure the record doesn't already exist
+        const subjectToDataSetExists = await tryCatch({
+            tryFn: async () => {
+                return SubjectToDataSetRepo.getBySubjectIdAndDataSetId(subjectId, dataSetId);
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in SubjectToDataSetService getBySubjectIdAndDataSetId',
+                    error
+                );
+            },
+        });
+
+        if (subjectToDataSetExists) {
+            console.log(
+                `SubjectToDataSet with subjectId ${subjectId} and dataSetId ${dataSetId} already exists.\n Skipping create and returning existing...`
+            );
+            return subjectToDataSetExists;
+        }
+
         const response = await tryCatch({
             tryFn: async () => {
                 return SubjectToDataSetRepo.createSubjectToDataSetRecord(input);
@@ -106,5 +131,24 @@ export const SubjectToDataSetService = {
             },
         });
         return response;
+    },
+
+    async createSubjectToDataSetRecords(
+        dataSets: DataSet[],
+        subjects: Subject[]
+    ): Promise<SubjectToDataSet[]> {
+        const input = generateDataSetPivotInput<Prisma.SubjectToDataSetCreateManyInput>(
+            dataSets,
+            subjects,
+            subjectList,
+            'subjectId'
+        );
+
+        const res = [];
+        for (const entry of input) {
+            const response = await this.createSubjectToDataSet(entry);
+            res.push(response);
+        }
+        return res;
     },
 };
