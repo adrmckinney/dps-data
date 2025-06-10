@@ -1,4 +1,4 @@
-import { DataSet } from '@prisma/client';
+import type { DataSet } from '@prisma/client';
 
 export type Operator =
     | 'equals'
@@ -36,12 +36,6 @@ export type ScopedDataSetFilterGroup = {
     dataSetId: DataSet['id'];
     filters: Partial<ScopedFilters[]>;
 };
-
-// export type QueryModifiers = { dataSetIds: DataSet['id'][] } & {
-//     globalFilters: Partial<GlobalFilters[]>;
-// } & {
-//     scopedFilters: ScopedDataSetFilterGroup[];
-// };
 
 export type DataSetFilter = {
     key: FilterOptions;

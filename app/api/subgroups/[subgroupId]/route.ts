@@ -5,12 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const GET = withApiErrorHandling(async (_req: NextRequest, context) => {
     const { params } = context ?? {};
-    const { subgroupId } = params ?? {};
+    const { subGroupId } = params ?? {};
 
-    if (!subgroupId) {
-        throw new BadRequestError('Missing subgroupId in request params');
+    if (!subGroupId) {
+        throw new BadRequestError('Missing subGroupId in request params');
     }
 
-    const subgroup = await SubgroupService.getSubgroupById(Number(subgroupId));
+    const subgroup = await SubgroupService.getSubgroupById(Number(subGroupId));
     return NextResponse.json(subgroup);
 });

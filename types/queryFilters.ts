@@ -15,7 +15,7 @@ export type FilterValue = string | number | boolean | string[] | number[];
 
 export type OrderDirection = 'asc' | 'desc';
 
-export type FilterPayloadKeys = 'subgroupId' | 'gradeId' | 'schoolId' | 'yearId' | 'levelId';
+export type FilterPayloadKeys = 'subGroupId' | 'gradeId' | 'schoolId' | 'yearId' | 'levelId';
 export type FilterOperatorObject = { operator: Operator; value: FilterValue };
 
 export type FilterPayload = {

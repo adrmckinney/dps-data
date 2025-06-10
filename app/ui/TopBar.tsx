@@ -18,7 +18,7 @@ import { isVisible } from '../../utils/filterScopeAndVisibilityUtils';
 import { Icon } from '../assets/icons';
 import { useReferenceContext } from '../context/referenceContext';
 import useFilterMap from '../hooks/useFilterMap';
-import { PopulationRouteService } from '../services/populationRouteService';
+import { VisualizationRouteService } from '../services/visualizationRouteService';
 import CancelButton from '../sharedComponents/buttons/CancelButton';
 import PrimaryButton from '../sharedComponents/buttons/PrimaryButton';
 import { UserNavigation } from './Main';
@@ -210,21 +210,21 @@ const TopBar = ({}: Props) => {
     console.log('filterSelectionsMap', filterSelectionsMap);
 
     const handleFilterSubmit = async () => {
+        const dataSets = filterSelectionsMap.get('dataSets');
+        if (!dataSets) return;
+
         const payloadFilters: QueryModifiers = mapFilterMapToQueryModifiers(filterSelectionsMap);
         if (!payloadFilters) return;
         console.log('payloadFilters', payloadFilters);
 
-        const dataSets = filterSelectionsMap.get('dataSets');
-        if (!dataSets) return;
-
         const res = await tryCatch({
             tryFn: async () => {
                 // return await popFn(payloadFilters);
-                return await PopulationRouteService.getSubgroupPopulation(
+                return await VisualizationRouteService.getVisualizationData(
                     payloadFilters
                     //     {
                     //     filters: {
-                    //         subgroupId: {
+                    //         subGroupId: {
                     //             operator: 'in',
                     //             value: [12],
                     //         },

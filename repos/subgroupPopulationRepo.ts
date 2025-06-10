@@ -4,10 +4,10 @@ import type { BulkInsertResult } from '../types/repo.ts';
 
 export const SubgroupPopulationRepo = {
     async createBulk(
-        records: Prisma.SubgroupPopulationCreateManyInput[]
+        records: Prisma.SubGroupPopulationCreateManyInput[]
     ): Promise<BulkInsertResult> {
         try {
-            const result = await prisma.subgroupPopulation.createMany({
+            const result = await prisma.subGroupPopulation.createMany({
                 data: records,
                 skipDuplicates: true,
             });
@@ -38,10 +38,10 @@ export const SubgroupPopulationRepo = {
     },
 
     async getFilteredSubgroupPopulation(params: {
-        where: Prisma.SubgroupPopulationWhereInput;
-        orderBy?: Prisma.SubgroupPopulationOrderByWithRelationInput[];
+        where: Prisma.SubGroupPopulationWhereInput;
+        orderBy?: Prisma.SubGroupPopulationOrderByWithRelationInput[];
     }) {
-        return prisma.subgroupPopulation.findMany({
+        return prisma.subGroupPopulation.findMany({
             where: params.where,
             orderBy: params.orderBy,
         });

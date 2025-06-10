@@ -1,11 +1,15 @@
 import { Prisma } from '@prisma/client';
 import type { QueryFilterPayload } from '../types/queryFilters.ts';
+import type { DataSetFilter } from '../types/queryModifiers.ts';
 import { buildSortOrder, buildWhereClause } from './Filter.ts';
 
 export function buildGradePopulationWhereClause(
-    filters: QueryFilterPayload['filters']
+    filters: DataSetFilter[]
 ): Prisma.GradePopulationWhereInput {
-    return buildWhereClause<Prisma.GradePopulationWhereInput>(filters ?? {});
+    if (!filters?.length) return {};
+
+    // Convert array of filters to Prisma where input
+    return buildWhereClause<Prisma.GradePopulationWhereInput>(filters);
 }
 
 export function buildGradePopulationSortOrder(

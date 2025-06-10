@@ -26,7 +26,7 @@ model Year {
   updatedAt          DateTime             @default(now()) @updatedAt
   DataSource         DataSource[]
   GradePopulation    GradePopulation[]
-  SubgroupPopulation SubgroupPopulation[]
+  SubGroupPopulation SubGroupPopulation[]
   PopulationSnapshot PopulationSnapshot[]
 }
 
@@ -71,7 +71,7 @@ model School {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   GradePopulation    GradePopulation[]
-  SubgroupPopulation SubgroupPopulation[]
+  SubGroupPopulation SubGroupPopulation[]
   PopulationSnapshot PopulationSnapshot[]
 }
 
@@ -115,7 +115,7 @@ model SubGroup {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
   dataSets           SubGroupToDataSet[]
-  SubgroupPopulation SubgroupPopulation[]
+  SubGroupPopulation SubGroupPopulation[]
 }
 
 model DataSet {
@@ -224,7 +224,7 @@ model DataSource {
   year               Year?                 @relation(fields: [yearId], references: [id])
   dataSets           DataSourceToDataSet[]
   GradePopulation    GradePopulation[]
-  SubgroupPopulation SubgroupPopulation[]
+  SubGroupPopulation SubGroupPopulation[]
   PopulationSnapshot PopulationSnapshot[]
 }
 
@@ -266,11 +266,11 @@ model GradePopulation {
   @@unique([schoolId, yearId, gradeId])
 }
 
-model SubgroupPopulation {
+model SubGroupPopulation {
   id          Int  @id @default(autoincrement())
   schoolId    Int
   yearId      Int
-  subgroupId  Int
+  subGroupId  Int
   count       Int
   pdfSourceId Int?
 
@@ -279,10 +279,10 @@ model SubgroupPopulation {
 
   school    School      @relation(fields: [schoolId], references: [id])
   year      Year        @relation(fields: [yearId], references: [id])
-  subgroup  SubGroup    @relation(fields: [subgroupId], references: [id])
+  subgroup  SubGroup    @relation(fields: [subGroupId], references: [id])
   pdfSource DataSource? @relation(fields: [pdfSourceId], references: [id])
 
-  @@unique([schoolId, yearId, subgroupId])
+  @@unique([schoolId, yearId, subGroupId])
 }
 
 // Flattened Model of school populations. Use this table for showing one

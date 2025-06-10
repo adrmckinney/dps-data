@@ -1,4 +1,5 @@
 import type { FilterCondition, OrderDirection } from '../types/queryFilters.ts';
+import type { DataSetFilter } from '../types/queryModifiers.ts';
 
 function buildClause(condition: FilterCondition) {
     if (condition.operator === 'equals') {
@@ -26,17 +27,16 @@ function setNested(obj: Record<string, unknown>, keys: string[], clause: unknown
 }
 
 /**
- * Builds a Prisma-compliant where clause.
+ * Builds a Prisma-compliant where clause from an array of DataSetFilters
  */
 export function buildWhereClause<TWhereInput extends Record<string, unknown>>(
-    filters: Record<string, FilterCondition>
+    filters: DataSetFilter[]
 ): TWhereInput {
     const where: TWhereInput = {} as TWhereInput;
 
-    for (const key in filters) {
-        const condition = filters[key];
-        const keys = key.split('.');
-        const clause = buildClause(condition);
+    for (const filter of filters) {
+        const keys = filter.key.split('.');
+        const clause = buildClause(filter.condition);
         setNested(where, keys, clause);
     }
 

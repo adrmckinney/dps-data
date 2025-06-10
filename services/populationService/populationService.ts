@@ -19,7 +19,7 @@ import { SubgroupPopulationRepo } from '../../repos/subgroupPopulationRepo.ts';
 import { SubgroupRepo } from '../../repos/subgroupRepo.ts';
 import { YearRepo } from '../../repos/yearRepo.ts';
 import type { RawPopulationData } from '../../types/population.ts';
-import type { QueryFilterPayload } from '../../types/queryFilters.ts';
+import type { DataSetFilterGroup } from '../../types/queryModifiers.ts';
 import { tryCatch, tryCatchSync } from '../../utils/tryCatch.ts';
 import { DataSetService } from '../dataSetService.ts';
 import { DataSourceToDataSetService } from '../dataSourceToDataSetService.ts';
@@ -33,15 +33,16 @@ export const PopulationService = {
         return;
     },
 
-    async getFilteredSubgroupPopulation(payload: QueryFilterPayload) {
-        const where = buildSubgroupPopulationWhereClause(payload.filters ?? {});
-        const orderBy = buildSubgroupPopulationSortOrder(payload.sort);
+    async getFilteredSubgroupPopulation(filterGroup: DataSetFilterGroup) {
+        const where = buildSubgroupPopulationWhereClause(filterGroup.filters ?? {});
+        const orderBy = buildSubgroupPopulationSortOrder();
         return SubgroupPopulationRepo.getFilteredSubgroupPopulation({ where, orderBy });
     },
 
-    async getFilteredGradePopulation(payload: QueryFilterPayload) {
-        const where = buildGradePopulationWhereClause(payload.filters ?? {});
-        const orderBy = buildGradePopulationSortOrder(payload.sort);
+    async getFilteredGradePopulation(filterGroup: DataSetFilterGroup) {
+        if (!filterGroup.filters) return null;
+        const where = buildGradePopulationWhereClause(filterGroup.filters);
+        const orderBy = buildGradePopulationSortOrder();
         return GradePopulationRepo.getFilteredGradePopulation({ where, orderBy });
     },
 

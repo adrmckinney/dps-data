@@ -9,8 +9,8 @@ export const bySubgroupParser = (
     dataSourceResponse: DataSource,
     schoolMap: Map<number, School>,
     subGroupMap: Map<string, SubGroup>
-): Prisma.SubgroupPopulationCreateManyInput[] => {
-    const preparedByGradeData: Prisma.SubgroupPopulationCreateManyInput[] = [];
+): Prisma.SubGroupPopulationCreateManyInput[] => {
+    const preparedByGradeData: Prisma.SubGroupPopulationCreateManyInput[] = [];
 
     for (const row of rows) {
         // In 2015-2016 PDF, the code is Site code for one table and Site Code - PMR Mo.1 for another
@@ -36,15 +36,15 @@ export const bySubgroupParser = (
                 continue;
             }
 
-            const subgroup = subGroupMap.get(key);
-            if (!subgroup) {
+            const subGroup = subGroupMap.get(key);
+            if (!subGroup) {
                 continue;
             }
 
             preparedByGradeData.push({
                 schoolId: school.id,
                 yearId: year.id,
-                subgroupId: subgroup.id,
+                subGroupId: subGroup.id,
                 count: parseInt(value),
                 pdfSourceId: dataSourceResponse.id,
             });

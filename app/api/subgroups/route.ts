@@ -4,6 +4,5 @@ import { NextResponse } from 'next/server';
 
 export const GET = withApiErrorHandling(async () => {
     const data = await SubgroupService.getSubgroups();
-    console.log('data', data);
     return NextResponse.json(data);
 });

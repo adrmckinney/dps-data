@@ -54,7 +54,7 @@ export type SubgroupPopulationResponse = {
     id: number;
     schoolId: number;
     yearId: number;
-    subgroupId: number;
+    subGroupId: number;
     count: number;
     pdfSourceId: number;
     createdAt: string;
