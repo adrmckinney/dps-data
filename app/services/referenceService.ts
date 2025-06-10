@@ -1,15 +1,56 @@
 export async function getAllReferenceData() {
-    const [years, grades, levels, schools, disciplines, subjects, subgroupTypes, subgroups] =
-        await Promise.all([
-            fetch('/api/years').then(res => res.json()),
-            fetch('/api/grades').then(res => res.json()),
-            fetch('/api/levels').then(res => res.json()),
-            fetch('/api/schools').then(res => res.json()),
-            fetch('/api/disciplines').then(res => res.json()),
-            fetch('/api/subjects').then(res => res.json()),
-            fetch('/api/subgroupTypes').then(res => res.json()),
-            fetch('/api/subgroups').then(res => res.json()),
-        ]);
+    const [
+        years,
+        grades,
+        levels,
+        schools,
+        disciplines,
+        subjects,
+        subGroupTypes,
+        subGroups,
+        dataSets,
+        dataSourceToDataSet,
+        disciplineToDataSet,
+        gradeToDataSet,
+        levelToDataSet,
+        subGroupToDataSet,
+        subjectToDataSet,
+        dataSourceTypes,
+    ] = await Promise.all([
+        fetch('/api/years').then(res => res.json()),
+        fetch('/api/grades').then(res => res.json()),
+        fetch('/api/levels').then(res => res.json()),
+        fetch('/api/schools').then(res => res.json()),
+        fetch('/api/disciplines').then(res => res.json()),
+        fetch('/api/subjects').then(res => res.json()),
+        fetch('/api/subGroupTypes').then(res => res.json()),
+        fetch('/api/subGroups').then(res => res.json()),
+        fetch('/api/dataSets').then(res => res.json()),
+        fetch('/api/dataSourceToDataSet').then(res => res.json()),
+        fetch('/api/disciplineToDataSet').then(res => res.json()),
+        fetch('/api/gradeToDataSet').then(res => res.json()),
+        fetch('/api/levelToDataSet').then(res => res.json()),
+        fetch('/api/subGroupToDataSet').then(res => res.json()),
+        fetch('/api/subjectToDataSet').then(res => res.json()),
+        fetch('/api/dataSourceType').then(res => res.json()),
+    ]);
 
-    return { years, grades, levels, schools, disciplines, subjects, subgroupTypes, subgroups };
+    return {
+        years,
+        grades,
+        levels,
+        schools,
+        disciplines,
+        subjects,
+        subGroupTypes,
+        subGroups,
+        dataSets,
+        dataSourceToDataSet,
+        disciplineToDataSet,
+        gradeToDataSet,
+        levelToDataSet,
+        subGroupToDataSet,
+        subjectToDataSet,
+        dataSourceTypes,
+    };
 }

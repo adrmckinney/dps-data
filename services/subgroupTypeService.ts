@@ -20,7 +20,7 @@ export const SubgroupTypeService = {
         });
 
         if (response.length === 0) {
-            throw new NotFoundError('No subgroups found. DB has likely not been seeded.');
+            throw new NotFoundError('No subGroups found. DB has likely not been seeded.');
         }
 
         return response;

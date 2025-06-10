@@ -1,13 +1,21 @@
 'use client';
 
 import type {
+    DataSet,
+    DataSourceToDataSet,
+    DataSourceType,
     Discipline,
+    DisciplineToDataSet,
     Grade,
+    GradeToDataSet,
     Level,
+    LevelToDataSet,
     School,
     SubGroup,
+    SubGroupToDataSet,
     SubGroupType,
     Subject,
+    SubjectToDataSet,
     Year,
 } from '@prisma/client';
 import React, { createContext, useContext, useReducer } from 'react';
@@ -20,8 +28,16 @@ type ReferenceState = {
     schools: School[];
     disciplines: Discipline[];
     subjects: Subject[];
-    subgroupTypes: SubGroupType[];
-    subgroups: SubGroup[];
+    subGroupTypes: SubGroupType[];
+    subGroups: SubGroup[];
+    dataSets: DataSet[];
+    dataSourceToDataSet: DataSourceToDataSet[];
+    disciplineToDataSet: DisciplineToDataSet[];
+    gradeToDataSet: GradeToDataSet[];
+    levelToDataSet: LevelToDataSet[];
+    subGroupToDataSet: SubGroupToDataSet[];
+    subjectToDataSet: SubjectToDataSet[];
+    dataSourceTypes: DataSourceType[];
 };
 
 type Action = { type: 'SET_REFERENCE_DATA'; key: keyof ReferenceState; payload: unknown };
@@ -33,8 +49,16 @@ const initialState: ReferenceState = {
     schools: [],
     disciplines: [],
     subjects: [],
-    subgroupTypes: [],
-    subgroups: [],
+    subGroupTypes: [],
+    subGroups: [],
+    dataSets: [],
+    dataSourceToDataSet: [],
+    disciplineToDataSet: [],
+    gradeToDataSet: [],
+    levelToDataSet: [],
+    subGroupToDataSet: [],
+    subjectToDataSet: [],
+    dataSourceTypes: [],
 };
 
 const ReferenceContext = createContext<{

@@ -13,7 +13,7 @@ export const SubgroupRepo = {
             return prisma.subGroup.findMany();
         } catch (error: unknown) {
             const originalMsg = getOriginalErrorMessage(error);
-            throw new DBError('DB error fetching all subgroups', originalMsg);
+            throw new DBError('DB error fetching all subGroups', originalMsg);
         }
     },
     async getSubgroupById(id: number): Promise<SubGroup | null> {

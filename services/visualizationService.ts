@@ -1,17 +1,34 @@
 import { QueryModifiers } from '@/types/queryModifiers';
+import { AppError, InternalServerError } from '../errors/AppError';
+import { tryCatch } from '../utils/tryCatch';
 import { AchievementService } from './achievementService/achievementService';
+import { DataSetService } from './dataSetService';
 import { DisciplineService } from './disciplineService/disciplineService';
 import { PopulationService } from './populationService/populationService';
 
 export const VisualizationService = {
     async getVisualizeData(payload: QueryModifiers) {
         console.log('payload vis Service', payload);
-        // Only fetch data for selected data types
-        const dataTypes = payload.dataTypes || [];
+        const dataSetsDB = await tryCatch({
+            tryFn: async () => {
+                return await DataSetService.getDataSets();
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in VisualizationService getDataSets',
+                    error
+                );
+            },
+        });
+        // OnlrInternalServerError fetch data for selected data types
+        const dataSets = payload.dataSetIds || [];
 
         const result: { [key: string]: unknown } = {};
 
-        if (dataTypes.includes('POPULATION_GRADE')) {
+        if (dataSets.includes('POPULATION_GRADE')) {
             const allFilters = {
                 ...payload.scopedFilters['POPULATION_GRADE'].filters,
                 ...payload.globalFilters,
@@ -21,7 +38,7 @@ export const VisualizationService = {
             console.log('res for pop grades', res);
         }
 
-        if (dataTypes.includes('POPULATION_SUBGROUP')) {
+        if (dataSets.includes('POPULATION_SUBGROUP')) {
             const allFilters = {
                 ...payload.scopedFilters['POPULATION_SUBGROUP'].filters,
                 ...payload.globalFilters,
@@ -30,7 +47,7 @@ export const VisualizationService = {
             console.log('res for pop grades', res);
         }
 
-        if (dataTypes.includes('POPULATION_GRADE') || dataTypes.includes('POPULATION_SUBGROUP')) {
+        if (dataSets.includes('POPULATION_GRADE') || dataSets.includes('POPULATION_SUBGROUP')) {
             const [
                 subgroupData,
                 gradeData,
@@ -50,10 +67,7 @@ export const VisualizationService = {
             };
         }
 
-        if (
-            dataTypes.includes('DISCIPLINE_OVERALL') ||
-            dataTypes.includes('DISCIPLINE_SUBGROUPS')
-        ) {
+        if (dataSets.includes('DISCIPLINE_OVERALL') || dataSets.includes('DISCIPLINE_SUBGROUPS')) {
             const [subgroupData, schoolData] = await Promise.all([
                 DisciplineService.getFilteredSubgroupData(payload),
                 DisciplineService.getFilteredSchoolData(payload),
@@ -66,8 +80,8 @@ export const VisualizationService = {
         }
 
         if (
-            dataTypes.includes('ACHIEVEMENT_OVERALL') ||
-            dataTypes.includes('ACHIEVEMENT_SUBGROUPS')
+            dataSets.includes('ACHIEVEMENT_OVERALL') ||
+            dataSets.includes('ACHIEVEMENT_SUBGROUPS')
         ) {
             const [subgroupData, schoolData] = await Promise.all([
                 AchievementService.getFilteredSubgroupData(payload),

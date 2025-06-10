@@ -1,7 +1,7 @@
 'use client';
 
 import { FormChangeType } from '@/types/formChangeTypes';
-import { FilterPayload } from '@/types/queryFilters';
+import { QueryModifiers } from '@/types/queryModifiers';
 import { tryCatch } from '@/utils/tryCatch';
 import {
     Menu,
@@ -14,13 +14,13 @@ import {
     PopoverPanel,
 } from '@headlessui/react';
 import { useState } from 'react';
+import { isVisible } from '../../utils/filterScopeAndVisibilityUtils';
 import { Icon } from '../assets/icons';
 import { useReferenceContext } from '../context/referenceContext';
-import { applySubgroup, DataTypeEnums, getKeysFromCategoryIds } from '../enums/DataTypeEnums';
+import useFilterMap from '../hooks/useFilterMap';
 import { PopulationRouteService } from '../services/populationRouteService';
 import CancelButton from '../sharedComponents/buttons/CancelButton';
 import PrimaryButton from '../sharedComponents/buttons/PrimaryButton';
-import { getDataSetApiFns, mapFilterMapToFilterPayload } from '../utils/apiFilterUtils';
 import { UserNavigation } from './Main';
 import TopBarMobile from './TopBarMobile';
 
@@ -62,22 +62,22 @@ const sortOptions: SortOption[] = [
     { name: 'Newest', href: '#', current: false },
 ];
 
-type FilterKeys = 'dataTypes' | 'years' | 'schools' | 'subgroups' | 'grades';
+type FilterKeys = 'dataSets' | 'years' | 'schools' | 'subGroups' | 'grades';
 export type FilterSelection = Map<FilterKeys, Set<number>>;
 
 const initialFilterSelectionMap: FilterSelection = new Map([
-    ['dataTypes', new Set()],
+    ['dataSets', new Set()],
     ['years', new Set()],
     ['schools', new Set()],
-    ['subgroups', new Set()],
+    ['subGroups', new Set()],
     ['grades', new Set()],
 ]);
 
 const initialNotify: Record<FilterKeys, boolean> = {
-    dataTypes: false,
+    dataSets: false,
     years: false,
     schools: false,
-    subgroups: false,
+    subGroups: false,
     grades: false,
 };
 
@@ -91,10 +91,12 @@ const TopBar = ({}: Props) => {
         setOpen(false);
     };
     const [notify, setNotify] = useState(initialNotify);
+    const { mapFilterMapToQueryModifiers } = useFilterMap();
     const selectedSchoolIds = filterSelectionsMap.get('schools');
-    const selectedCategoryIds = filterSelectionsMap.get('dataTypes');
-    const selectedSubgroupIds = filterSelectionsMap.get('subgroups') || new Set();
+    const selectedDataSetIds = filterSelectionsMap.get('dataSets');
+    const selectedSubgroupIds = filterSelectionsMap.get('subGroups') || new Set();
     const selectedGradeIds = filterSelectionsMap.get('grades') || new Set();
+    const selectedYearIds = filterSelectionsMap.get('years');
 
     const handleNotify = (filterType: FilterKeys, value: boolean, timeOutValue: number = 0) => {
         if (timeOutValue > 0) {
@@ -113,23 +115,23 @@ const TopBar = ({}: Props) => {
     };
 
     const filterInRangeSubgroupsByDataSets = (
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         newMap: Map<FilterKeys, Set<number>>,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         selectedDataSetIds: Set<number>
     ): void => {
-        const selectedCategoryKeys = getKeysFromCategoryIds(selectedDataSetIds);
-        const selectedSubgroups = state.subgroups.filter(g => selectedSubgroupIds.has(g.id));
-
-        selectedSubgroups?.forEach(group => {
-            const subgroupIsAvailable = group.availableForDataTypes.some(key =>
-                selectedCategoryKeys.includes(key)
-            );
-
-            if (!subgroupIsAvailable) {
-                handleNotify('subgroups', true);
-                newMap.get('subgroups')?.delete(group.id);
-                handleNotify('subgroups', false, 300);
-            }
-        });
+        // const selectedCategoryKeys = getKeysFromCategoryIds(selectedDataSetIds);
+        // const selectedSubgroups = state.subGroups.filter(g => selectedSubgroupIds.has(g.id));
+        // selectedSubgroups?.forEach(group => {
+        //     const subgroupIsAvailable = group.availableForDataTypes.some(key =>
+        //         selectedCategoryKeys.includes(key)
+        //     );
+        //     if (!subgroupIsAvailable) {
+        //         handleNotify('subGroups', true);
+        //         newMap.get('subGroups')?.delete(group.id);
+        //         handleNotify('subGroups', false, 300);
+        //     }
+        // });
     };
 
     const handleUpdateFilterSelectMap = (name: string, value: number) => {
@@ -142,10 +144,10 @@ const TopBar = ({}: Props) => {
             if (currentSet.has(value)) {
                 currentSet.delete(value);
 
-                // Remove pre-selected subgroups that were in range for the dataType that was deselected
+                // Remove pre-selected subGroups that were in range for the dataType that was deselected
                 // Must be > 1 (not 0) because it is checking if the last one is being removed
-                if (key === 'dataTypes' && selectedSubgroupIds.size > 1) {
-                    const allSelectedDataSetIds = new Set(selectedCategoryIds);
+                if (key === 'dataSets' && selectedSubgroupIds.size > 1) {
+                    const allSelectedDataSetIds = new Set(selectedDataSetIds);
                     allSelectedDataSetIds.delete(value);
                     filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
                 }
@@ -166,9 +168,9 @@ const TopBar = ({}: Props) => {
             } else {
                 currentSet.add(value);
 
-                // Remove any pre-selected subgroups that are no longer in range for the selected dataType
-                if (key === 'dataTypes' && selectedSubgroupIds?.size > 0) {
-                    const allSelectedDataSetIds = new Set(selectedCategoryIds);
+                // Remove any pre-selected subGroups that are no longer in range for the selected dataType
+                if (key === 'dataSets' && selectedSubgroupIds?.size > 0) {
+                    const allSelectedDataSetIds = new Set(selectedDataSetIds);
                     allSelectedDataSetIds.add(value);
                     filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
                 }
@@ -208,17 +210,12 @@ const TopBar = ({}: Props) => {
     console.log('filterSelectionsMap', filterSelectionsMap);
 
     const handleFilterSubmit = async () => {
-        const payloadFilters: { filters: Partial<FilterPayload['filters']> } =
-            mapFilterMapToFilterPayload(filterSelectionsMap);
+        const payloadFilters: QueryModifiers = mapFilterMapToQueryModifiers(filterSelectionsMap);
         if (!payloadFilters) return;
         console.log('payloadFilters', payloadFilters);
 
-        const dataTypes = filterSelectionsMap.get('dataTypes');
-        if (!dataTypes) return;
-
-        const dataTypeFns = getDataSetApiFns(dataTypes);
-        const popFn = dataTypeFns.get('subgroupPopulation');
-        if (!popFn) return;
+        const dataSets = filterSelectionsMap.get('dataSets');
+        if (!dataSets) return;
 
         const res = await tryCatch({
             tryFn: async () => {
@@ -248,21 +245,27 @@ const TopBar = ({}: Props) => {
         console.log('res', res);
     };
 
+    console.log('state', state);
+
     const selectedLevelIds = state.schools
         .filter(s => selectedSchoolIds?.has(s.id))
         .map(s => s.levelId);
+    const selectedYears = state.years
+        .filter(y => selectedYearIds?.has(y.id))
+        .sort((a, b) => +a.startYear - +b.startYear);
+
     const filters: Filter[] = [
         {
-            id: 'dataTypes', // determines the api
-            key: 'dataTypes',
+            id: 'dataSets',
+            key: 'dataSets',
             name: 'Data Sets',
-            options: Object.values(DataTypeEnums)
+            options: state.dataSets
                 .filter(dt => dt.label !== 'Other')
                 .map(dt => {
                     return {
                         value: dt.id,
                         label: dt.label,
-                        checked: filterSelectionsMap.get('dataTypes')?.has(dt.id) || false,
+                        checked: filterSelectionsMap.get('dataSets')?.has(dt.id) || false,
                         onCheck: handleChecked,
                         show: true,
                     };
@@ -292,21 +295,29 @@ const TopBar = ({}: Props) => {
                     label: s.name,
                     checked: filterSelectionsMap.get('schools')?.has(s.id) || false,
                     onCheck: handleChecked,
-                    show: true,
+                    // Founded is being compared with the oldest selected startYear. If years 2020-2021 and
+                    // 2024-2025 are selected then Murray-Massenburg (founded in 2024) will be
+                    // omitted because the oldest year (2020) is prior to it's founding.
+                    show: selectedYearIds?.size === 0 || s.founded <= +selectedYears[0]?.startYear,
                 };
             }),
         },
         {
-            id: 'subgroups',
-            key: 'subgroups',
+            id: 'subGroups',
+            key: 'subGroups',
             name: 'Subgroups',
-            options: state.subgroups.map(group => {
+            options: state.subGroups.map(group => {
                 return {
                     value: group.id,
                     label: group.name,
-                    checked: filterSelectionsMap.get('subgroups')?.has(group.id) || false,
+                    checked: filterSelectionsMap.get('subGroups')?.has(group.id) || false,
                     onCheck: handleChecked,
-                    show: applySubgroup(group, selectedCategoryIds),
+                    show: isVisible(
+                        state.subGroupToDataSet,
+                        selectedDataSetIds,
+                        'subGroupId',
+                        group.id
+                    ),
                 };
             }),
         },
@@ -315,15 +326,30 @@ const TopBar = ({}: Props) => {
             key: 'grades',
             name: 'Grades',
             options: state.grades.map(grade => {
+                // Wrap in a useMemo
+                let show = true;
+                const gradeIsVisibleByDataSet = isVisible(
+                    state.gradeToDataSet,
+                    selectedDataSetIds,
+                    'gradeId',
+                    grade.id
+                );
+                const gradeIsVisibleBySelectedSchool =
+                    selectedSchoolIds?.size === 0 || selectedLevelIds.includes(grade.levelId);
+
+                if (
+                    !gradeIsVisibleByDataSet ||
+                    (gradeIsVisibleByDataSet && !gradeIsVisibleBySelectedSchool)
+                ) {
+                    show = false;
+                }
+
                 return {
                     value: grade.id,
                     label: grade.name,
                     checked: filterSelectionsMap.get('grades')?.has(grade.id) || false,
                     onCheck: handleChecked,
-                    show:
-                        selectedSchoolIds?.size === 0
-                            ? true
-                            : selectedLevelIds.includes(grade.levelId),
+                    show,
                 };
             }),
         },
@@ -333,8 +359,8 @@ const TopBar = ({}: Props) => {
         for (const value of setValues) {
             let label = '';
             switch (key) {
-                case 'dataTypes':
-                    label = Object.values(DataTypeEnums).find(dt => dt.id === value)?.label || '';
+                case 'dataSets':
+                    label = state.dataSets.find(dt => dt.id === value)?.label || '';
                     break;
                 case 'schools':
                     label = state.schools.find(s => s.id === value)?.abbreviation || '';
@@ -342,8 +368,8 @@ const TopBar = ({}: Props) => {
                 case 'grades':
                     label = state.grades.find(g => g.id === value)?.name || '';
                     break;
-                case 'subgroups':
-                    label = state.subgroups.find(sg => sg.id === value)?.name || '';
+                case 'subGroups':
+                    label = state.subGroups.find(sg => sg.id === value)?.name || '';
                     break;
                 case 'years':
                     label =

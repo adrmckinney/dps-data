@@ -14,46 +14,53 @@ export type Operator =
     | 'not';
 
 export type FilterValue = string | number | boolean | string[] | number[];
+export type FilterScope = 'global' | 'scoped';
 
-type GlobalFiltersOptions = 'schoolIds' | 'yearIds';
-type ScopedFiltersOptions = 'subgroupIds' | 'gradeIds' | 'levelIds';
+type GlobalFiltersOptions = 'schoolId' | 'yearId';
+export type ScopedFiltersOptions = 'subGroupId' | 'gradeId' | 'levelId';
 export type FilterOptions = GlobalFiltersOptions | ScopedFiltersOptions;
 
 export type OrderDirection = 'asc' | 'desc';
 
 export type GlobalFilters = {
-    [field in GlobalFiltersOptions]?: FilterCondition;
+    key: GlobalFiltersOptions;
+    condition: FilterCondition;
 };
 
-// export type ScopedFilters = {
-//     [key in DataSet]: {
-//         filters?: FilterCondition;
-//         sort?: {
-//             field: string;
-//             direction: OrderDirection;
-//         };
-//     };
-// };
 export type ScopedFilters = {
-    filters?: FilterCondition;
-    sort?: {
-        field: string;
-        direction: OrderDirection;
-    };
+    key: ScopedFiltersOptions;
+    condition: FilterCondition;
 };
 
-// export type QueryModifiers = { dataTypes: DataSet[] } & {
-//     globalFilters: Partial<GlobalFilters>;
+export type ScopedDataSetFilterGroup = {
+    dataSetId: DataSet['id'];
+    filters: Partial<ScopedFilters[]>;
+};
+
+// export type QueryModifiers = { dataSetIds: DataSet['id'][] } & {
+//     globalFilters: Partial<GlobalFilters[]>;
 // } & {
-//     scopedFilters: Partial<ScopedFilters>;
+//     scopedFilters: ScopedDataSetFilterGroup[];
 // };
+
+export type DataSetFilter = {
+    key: FilterOptions;
+    scopeType: FilterScope;
+    condition: FilterCondition;
+};
+
+export type DataSetFilterGroup = {
+    dataSetId: DataSet['id'];
+    filters: DataSetFilter[];
+};
+
 export type QueryModifiers = {
-    dataTypes: DataSet[];
-    filters: Filters[];
-    sort?: {
-        field: string;
-        direction: OrderDirection;
-    };
+    dataSetIds: DataSet['id'][];
+    filterGroups: DataSetFilterGroup[];
+    // sort?: {
+    //     field: string;
+    //     direction: OrderDirection;
+    // };
 };
 
 export type Filters = {

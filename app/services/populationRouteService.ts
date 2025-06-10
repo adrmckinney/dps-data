@@ -2,7 +2,7 @@ import { QueryFilterPayload } from '@/types/queryFilters';
 
 export const PopulationRouteService = {
     async getSubgroupPopulation(payload: QueryFilterPayload) {
-        const res = await fetch('api/population/subgroups', {
+        const res = await fetch('api/population/subGroups', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

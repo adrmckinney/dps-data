@@ -287,7 +287,7 @@ export const SUBGROUPS_SEED: FlatSubGroupCreateInput[] = subGroupsList.map(
     ({ dataSets, ...rest }) => rest
 );
 
-// Relevant subgroups for discipline data from DPS
+// Relevant subGroups for discipline data from DPS
 export const DISCIPLINE_SUB_GROUPS = [
     ...ALL_STUDENTS,
     ...RACE_GENDER_COMBO,

@@ -20,7 +20,7 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 ## Seed
 - To seed the default tables (e.g., Level, Year, School, Grade, Discipline, Subject, SubGroup, SubGroupType) run: `npx prisma db seed`
-- To seed the population tables (snapshot, subgroups, grades) with data from PDFs, run: `yarn run seed:population`
+- To seed the population tables (snapshot, subGroups, grades) with data from PDFs, run: `yarn run seed:population`
 
 ## Migrations
 - To reset migrations, run: `npx prisma migrate reset`. This drops all tables and the DB and creates them again according to the already established migration files. This command will also automatically seed the DB with the default tables--but not the other tables.

@@ -209,7 +209,7 @@ export const PopulationService = {
         });
 
         // Subgroups
-        const subgroups = await tryCatch({
+        const subGroups = await tryCatch({
             tryFn: async () => {
                 return await SubgroupRepo.getAllSubgroups();
             },
@@ -217,7 +217,7 @@ export const PopulationService = {
                 throw error;
             },
         });
-        const subgroupsMap = new Map(subgroups.map(sg => [sg.secondaryKey, sg]));
+        const subgroupsMap = new Map(subGroups.map(sg => [sg.secondaryKey, sg]));
 
         const preparedSubgroupData = tryCatchSync({
             tryFn: () => {

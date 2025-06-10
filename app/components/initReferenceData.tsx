@@ -16,8 +16,16 @@ export default function InitReferenceData() {
                 schools,
                 disciplines,
                 subjects,
-                subgroupTypes,
-                subgroups,
+                subGroupTypes,
+                subGroups,
+                dataSets,
+                dataSourceToDataSet,
+                disciplineToDataSet,
+                gradeToDataSet,
+                levelToDataSet,
+                subGroupToDataSet,
+                subjectToDataSet,
+                dataSourceTypes,
             } = await getAllReferenceData();
 
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'years', payload: years });
@@ -26,8 +34,44 @@ export default function InitReferenceData() {
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'schools', payload: schools });
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'disciplines', payload: disciplines });
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'subjects', payload: subjects });
-            dispatch({ type: 'SET_REFERENCE_DATA', key: 'subgroupTypes', payload: subgroupTypes });
-            dispatch({ type: 'SET_REFERENCE_DATA', key: 'subgroups', payload: subgroups });
+            dispatch({ type: 'SET_REFERENCE_DATA', key: 'subGroupTypes', payload: subGroupTypes });
+            dispatch({ type: 'SET_REFERENCE_DATA', key: 'subGroups', payload: subGroups });
+            dispatch({ type: 'SET_REFERENCE_DATA', key: 'dataSets', payload: dataSets });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'dataSourceToDataSet',
+                payload: dataSourceToDataSet,
+            });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'disciplineToDataSet',
+                payload: disciplineToDataSet,
+            });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'gradeToDataSet',
+                payload: gradeToDataSet,
+            });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'levelToDataSet',
+                payload: levelToDataSet,
+            });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'subGroupToDataSet',
+                payload: subGroupToDataSet,
+            });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'subjectToDataSet',
+                payload: subjectToDataSet,
+            });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'dataSourceTypes',
+                payload: dataSourceTypes,
+            });
         })();
     }, [dispatch]);
 

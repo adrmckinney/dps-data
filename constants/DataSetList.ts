@@ -24,8 +24,8 @@ export const DATA_SETS_SEED: DataSet[] = [
     },
     {
         key: 'DISCIPLINE_SUBGROUPS',
-        label: 'Discipline - subgroups',
-        description: 'Discipline data by subgroups per school',
+        label: 'Discipline - subGroups',
+        description: 'Discipline data by subGroups per school',
     },
     {
         key: 'ACHIEVEMENT_OVERALL',
@@ -34,7 +34,7 @@ export const DATA_SETS_SEED: DataSet[] = [
     },
     {
         key: 'ACHIEVEMENT_SUBGROUPS',
-        label: 'Achievement - subgroups',
+        label: 'Achievement - subGroups',
         description: 'Achievement data by subgroup',
     },
 ];
