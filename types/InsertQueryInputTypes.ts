@@ -35,3 +35,8 @@ export type FlatDataSourceToDataSetCreateInput = {
     dataSourceId: number;
     dataSetId: number;
 };
+
+export type FlatSubGroupCollisionCreateInput = {
+    sourceId: number;
+    targetId: number;
+};

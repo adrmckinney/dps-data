@@ -2,6 +2,7 @@
 
 import { FormChangeType } from '@/types/formChangeTypes';
 import { QueryModifiers } from '@/types/queryModifiers';
+import { QueryModifierResponse } from '@/types/queryResponseTypes';
 import { tryCatch } from '@/utils/tryCatch';
 import {
     Menu,
@@ -215,26 +216,11 @@ const TopBar = ({}: Props) => {
 
         const payloadFilters: QueryModifiers = mapFilterMapToQueryModifiers(filterSelectionsMap);
         if (!payloadFilters) return;
-        console.log('payloadFilters', payloadFilters);
+        // console.log('payloadFilters', payloadFilters);
 
-        const res = await tryCatch({
+        const res: QueryModifierResponse[] = await tryCatch({
             tryFn: async () => {
-                // return await popFn(payloadFilters);
-                return await VisualizationRouteService.getVisualizationData(
-                    payloadFilters
-                    //     {
-                    //     filters: {
-                    //         subGroupId: {
-                    //             operator: 'in',
-                    //             value: [12],
-                    //         },
-                    //         'school.levelId': {
-                    //             operator: 'equals',
-                    //             value: 3,
-                    //         },
-                    //     },
-                    // }
-                );
+                return await VisualizationRouteService.getVisualizationData(payloadFilters);
             },
             catchFn: (error: unknown) => {
                 console.error('Error:', error);
@@ -242,7 +228,18 @@ const TopBar = ({}: Props) => {
             },
         });
 
-        console.log('res', res);
+        res.forEach(resGroup => {
+            if (resGroup.type === 'population_grade') {
+                // res.data.gradeId
+                console.log('res in grade pop', resGroup);
+            }
+
+            if (resGroup.type === 'population_subgroup') {
+                // res.data.gradeId
+                console.log('res in subGroup pop', resGroup);
+            }
+            // console.log('res outside', res);
+        });
     };
 
     console.log('state', state);

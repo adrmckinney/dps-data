@@ -116,6 +116,21 @@ model SubGroup {
   updatedAt          DateTime             @default(now()) @updatedAt
   dataSets           SubGroupToDataSet[]
   SubGroupPopulation SubGroupPopulation[]
+
+  // Alias these relation fields
+  sourceCollisions SubGroupCollision[] @relation("SourceCollisions")
+  targetCollisions SubGroupCollision[] @relation("TargetCollisions")
+}
+
+model SubGroupCollision {
+  id       Int @id @default(autoincrement())
+  sourceId Int
+  targetId Int
+
+  source SubGroup @relation("SourceCollisions", fields: [sourceId], references: [id])
+  target SubGroup @relation("TargetCollisions", fields: [targetId], references: [id])
+
+  @@unique([sourceId, targetId])
 }
 
 model DataSet {

@@ -20,6 +20,7 @@ import { SubgroupRepo } from '../../repos/subgroupRepo.ts';
 import { YearRepo } from '../../repos/yearRepo.ts';
 import type { RawPopulationData } from '../../types/population.ts';
 import type { DataSetFilterGroup } from '../../types/queryModifiers.ts';
+import { GradePopulationResponse } from '../../types/queryResponseTypes.ts';
 import { tryCatch, tryCatchSync } from '../../utils/tryCatch.ts';
 import { DataSetService } from '../dataSetService.ts';
 import { DataSourceToDataSetService } from '../dataSourceToDataSetService.ts';
@@ -39,8 +40,10 @@ export const PopulationService = {
         return SubgroupPopulationRepo.getFilteredSubgroupPopulation({ where, orderBy });
     },
 
-    async getFilteredGradePopulation(filterGroup: DataSetFilterGroup) {
-        if (!filterGroup.filters) return null;
+    async getFilteredGradePopulation(
+        filterGroup: DataSetFilterGroup
+    ): Promise<GradePopulationResponse[]> {
+        if (!filterGroup.filters) return [];
         const where = buildGradePopulationWhereClause(filterGroup.filters);
         const orderBy = buildGradePopulationSortOrder();
         return GradePopulationRepo.getFilteredGradePopulation({ where, orderBy });

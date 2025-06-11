@@ -16,6 +16,7 @@ import { GradeService } from '../services/gradeService.ts';
 import { GradeToDataSetService } from '../services/gradeToDataSetService.ts';
 import { LevelService } from '../services/levelService.ts';
 import { LevelToDataSetService } from '../services/levelToDataSetService.ts';
+import { SubGroupCollisionService } from '../services/subGroupCollisionService.ts';
 import { SubgroupService } from '../services/subgroupService.ts';
 import { SubGroupToDataSetService } from '../services/subGroupToDataSetService.ts';
 import { SubjectService } from '../services/subjectService.ts';
@@ -59,6 +60,8 @@ async function main() {
     await prisma.subject.createMany({ data: SUBJECTS_SEED, skipDuplicates: true });
     const subjectsDB = await SubjectService.getSubjects();
     await SubjectToDataSetService.createSubjectToDataSetRecords(dataSets, subjectsDB);
+
+    await SubGroupCollisionService.createSubGroupCollisionRecords(subGroupsDB);
 
     console.log('🌱 Database seeded');
 }
