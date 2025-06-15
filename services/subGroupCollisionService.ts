@@ -64,6 +64,29 @@ export const SubGroupCollisionService = {
         return response;
     },
 
+    async getComboTypeSubGroupCollisions(): Promise<SubGroupCollision[]> {
+        const response = await tryCatch({
+            tryFn: async () => {
+                return SubGroupCollisionRepo.getComboTypeSubGroupCollisions();
+            },
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in SubGroupCollisionService getComboTypeSubGroupCollisions',
+                    error
+                );
+            },
+        });
+
+        if (response.length === 0) {
+            throw new NotFoundError('SubGroupCollision not found. DB has likely not been seeded.');
+        }
+
+        return response;
+    },
+
     async createSubGroupCollision(
         input: FlatSubGroupCollisionCreateInput
     ): Promise<SubGroupCollision> {
@@ -134,11 +157,11 @@ export const SubGroupCollisionService = {
     async createSubGroupCollisionRecords(subGroupDB: SubGroup[]): Promise<SubGroupCollision[]> {
         const input: Prisma.SubGroupCollisionCreateManyInput[] = [];
         for (const sg of subGroupsList) {
-            const source = subGroupDB.find(sgDB => sgDB.key === sg.key);
+            const source = subGroupDB.find(sgDB => sgDB.abbreviation === sg.abbreviation);
             if (!source) continue;
 
-            for (const collision of sg.collisions) {
-                const target = subGroupDB.find(sgDB => sgDB.key === collision);
+            for (const collisionAbbreviation of sg.collisions) {
+                const target = subGroupDB.find(sgDB => sgDB.abbreviation === collisionAbbreviation);
                 if (!target) continue;
 
                 input.push({

@@ -4,24 +4,19 @@ import { FormChangeType } from '@/types/formChangeTypes';
 import { QueryModifiers } from '@/types/queryModifiers';
 import { QueryModifierResponse } from '@/types/queryResponseTypes';
 import { tryCatch } from '@/utils/tryCatch';
-import {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    Popover,
-    PopoverButton,
-    PopoverGroup,
-    PopoverPanel,
-} from '@headlessui/react';
+import { Level } from '@prisma/client';
 import { useState } from 'react';
-import { isVisible } from '../../utils/filterScopeAndVisibilityUtils';
-import { Icon } from '../assets/icons';
+import { isSubGroupCollision, isVisible } from '../../utils/filterScopeAndVisibilityUtils';
+import SortMenu from '../components/topBar/SortMenu';
 import { useReferenceContext } from '../context/referenceContext';
+import { useVisualContext } from '../context/visualContextProvider';
 import useFilterMap from '../hooks/useFilterMap';
+import useHydrateApiData from '../hooks/useHydrateApiData';
 import { VisualizationRouteService } from '../services/visualizationRouteService';
 import CancelButton from '../sharedComponents/buttons/CancelButton';
 import PrimaryButton from '../sharedComponents/buttons/PrimaryButton';
+import ActiveFilterPill from '../sharedComponents/pills/ActiveFilterPill';
+import OptionsPopover from '../sharedComponents/popovers/OptionsPopover';
 import { UserNavigation } from './Main';
 import TopBarMobile from './TopBarMobile';
 
@@ -30,28 +25,45 @@ type Props = {
     setSidebarOpen: (state: boolean) => void;
 };
 
+export type GroupedFilter = {
+    id: string;
+    key: string;
+    name: string;
+    groupOptions: GroupOption[];
+};
+
 export type Filter = {
     id: string;
     key: string;
     name: string;
-    options: FilterOptions[];
+    options: FilterOption[] | null;
+    groupOptions: GroupOption[] | null;
+    type: 'singleFilterType' | 'groupedFilterType';
 };
 
-type FilterOptions = {
+export type GroupOption = {
+    groupType: string; // This will be 'schoolLevel', 'gradeLevel', 'subGroupType'
+    groupId: number; // This will be like a levelId for schools and grades or a subGroupTypeId
+    groupLabel: string; // This will be like 'Race' or 'High School'
+    options: FilterOption[];
+};
+
+export type FilterOption = {
     value: number;
     label: string;
     checked: boolean;
     onCheck: (e: FormChangeType) => void;
     show: boolean;
+    disabled: boolean;
 };
 
-type SortOption = {
+export type SortOption = {
     name: string;
     href: string;
     current: boolean;
 };
 
-type ActiveFilter = {
+export type ActiveFilter = {
     id: number;
     title: string;
     label: string;
@@ -63,7 +75,7 @@ const sortOptions: SortOption[] = [
     { name: 'Newest', href: '#', current: false },
 ];
 
-type FilterKeys = 'dataSets' | 'years' | 'schools' | 'subGroups' | 'grades';
+export type FilterKeys = 'dataSets' | 'years' | 'schools' | 'subGroups' | 'grades';
 export type FilterSelection = Map<FilterKeys, Set<number>>;
 
 const initialFilterSelectionMap: FilterSelection = new Map([
@@ -85,6 +97,8 @@ const initialNotify: Record<FilterKeys, boolean> = {
 const TopBar = ({}: Props) => {
     const [open, setOpen] = useState(false);
     const { state } = useReferenceContext();
+    const { dispatch: visualDispatch } = useVisualContext();
+    const { hydrateGradePopulationData, hydrateSubGroupPopulationData } = useHydrateApiData();
     const [filterSelectionsMap, setFilterSelectionsMap] =
         useState<FilterSelection>(initialFilterSelectionMap);
     const activeFilters: ActiveFilter[] = [];
@@ -116,23 +130,24 @@ const TopBar = ({}: Props) => {
     };
 
     const filterInRangeSubgroupsByDataSets = (
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         newMap: Map<FilterKeys, Set<number>>,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         selectedDataSetIds: Set<number>
     ): void => {
-        // const selectedCategoryKeys = getKeysFromCategoryIds(selectedDataSetIds);
-        // const selectedSubgroups = state.subGroups.filter(g => selectedSubgroupIds.has(g.id));
-        // selectedSubgroups?.forEach(group => {
-        //     const subgroupIsAvailable = group.availableForDataTypes.some(key =>
-        //         selectedCategoryKeys.includes(key)
-        //     );
-        //     if (!subgroupIsAvailable) {
-        //         handleNotify('subGroups', true);
-        //         newMap.get('subGroups')?.delete(group.id);
-        //         handleNotify('subGroups', false, 300);
-        //     }
-        // });
+        const selectedSubgroups = state.subGroups.filter(g => selectedSubgroupIds.has(g.id));
+        selectedSubgroups?.forEach(group => {
+            const subGroupInScope = isVisible(
+                state.subGroupToDataSet,
+                selectedDataSetIds,
+                'subGroupId',
+                group.id
+            );
+
+            if (!subGroupInScope) {
+                handleNotify('subGroups', true);
+                newMap.get('subGroups')?.delete(group.id);
+                handleNotify('subGroups', false, 300);
+            }
+        });
     };
 
     const handleUpdateFilterSelectMap = (name: string, value: number) => {
@@ -145,9 +160,8 @@ const TopBar = ({}: Props) => {
             if (currentSet.has(value)) {
                 currentSet.delete(value);
 
-                // Remove pre-selected subGroups that were in range for the dataType that was deselected
-                // Must be > 1 (not 0) because it is checking if the last one is being removed
-                if (key === 'dataSets' && selectedSubgroupIds.size > 1) {
+                // Remove pre-selected subGroups that were in range for the dataSet that was deselected
+                if (key === 'dataSets' && selectedSubgroupIds.size > 0) {
                     const allSelectedDataSetIds = new Set(selectedDataSetIds);
                     allSelectedDataSetIds.delete(value);
                     filterInRangeSubgroupsByDataSets(newMap, allSelectedDataSetIds);
@@ -208,7 +222,7 @@ const TopBar = ({}: Props) => {
         handleUpdateFilterSelectMap(name, +value);
     };
 
-    console.log('filterSelectionsMap', filterSelectionsMap);
+    // console.log('filterSelectionsMap', filterSelectionsMap);
 
     const handleFilterSubmit = async () => {
         const dataSets = filterSelectionsMap.get('dataSets');
@@ -230,13 +244,24 @@ const TopBar = ({}: Props) => {
 
         res.forEach(resGroup => {
             if (resGroup.type === 'population_grade') {
-                // res.data.gradeId
-                console.log('res in grade pop', resGroup);
+                const hydratedGradeData = hydrateGradePopulationData(resGroup);
+
+                console.log('hydratedGradeData in pop grad', hydratedGradeData);
+                if (hydratedGradeData && hydratedGradeData.type === 'population_grade') {
+                    visualDispatch({ type: 'POPULATION_GRADE', payload: hydratedGradeData.data });
+                }
             }
 
             if (resGroup.type === 'population_subgroup') {
-                // res.data.gradeId
-                console.log('res in subGroup pop', resGroup);
+                const hydratedSubGroupData = hydrateSubGroupPopulationData(resGroup);
+
+                console.log('hydratedSubGroupData in sub pop', hydratedSubGroupData);
+                if (hydratedSubGroupData && hydratedSubGroupData.type === 'population_subgroup') {
+                    visualDispatch({
+                        type: 'POPULATION_SUB_GROUP',
+                        payload: hydratedSubGroupData.data,
+                    });
+                }
             }
             // console.log('res outside', res);
         });
@@ -257,16 +282,19 @@ const TopBar = ({}: Props) => {
             key: 'dataSets',
             name: 'Data Sets',
             options: state.dataSets
-                .filter(dt => dt.label !== 'Other')
-                .map(dt => {
+                .filter(ds => ds.label !== 'Other')
+                .map(ds => {
                     return {
-                        value: dt.id,
-                        label: dt.label,
-                        checked: filterSelectionsMap.get('dataSets')?.has(dt.id) || false,
+                        value: ds.id,
+                        label: ds.label,
+                        checked: filterSelectionsMap.get('dataSets')?.has(ds.id) || false,
                         onCheck: handleChecked,
                         show: true,
+                        disabled: false,
                     };
                 }),
+            groupOptions: null,
+            type: 'singleFilterType',
         },
         {
             id: 'year',
@@ -279,44 +307,85 @@ const TopBar = ({}: Props) => {
                     checked: filterSelectionsMap.get('years')?.has(y.id) || false,
                     onCheck: handleChecked,
                     show: true,
+                    disabled: false,
                 };
             }),
+            groupOptions: null,
+            type: 'singleFilterType',
         },
         {
             id: 'school',
             key: 'schools',
             name: 'School',
-            options: state.schools.map(s => {
-                return {
-                    value: s.id,
-                    label: s.name,
-                    checked: filterSelectionsMap.get('schools')?.has(s.id) || false,
-                    onCheck: handleChecked,
-                    // Founded is being compared with the oldest selected startYear. If years 2020-2021 and
-                    // 2024-2025 are selected then Murray-Massenburg (founded in 2024) will be
-                    // omitted because the oldest year (2020) is prior to it's founding.
-                    show: selectedYearIds?.size === 0 || s.founded <= +selectedYears[0]?.startYear,
-                };
-            }),
+            options: null,
+            groupOptions: (() => {
+                const schoolLevels: Record<Level['id'], Level['name']> = {};
+                state.levels.forEach(l => {
+                    if (l.name.toLowerCase() !== 'unknown') {
+                        schoolLevels[l.id] = l.name;
+                    }
+                });
+
+                // Create initial group structure
+                const levelGroups = Object.entries(schoolLevels).map(([levelId, label]) => ({
+                    groupType: 'schoolLevel',
+                    groupId: Number(levelId),
+                    groupLabel: label,
+                    options: [] as FilterOption[],
+                }));
+
+                const groupMap = new Map<number, (typeof levelGroups)[number]>();
+                levelGroups.forEach(group => {
+                    groupMap.set(group.groupId, group);
+                });
+
+                // Fill options into the correct group
+                state.schools.forEach(s => {
+                    const group = groupMap.get(s.levelId);
+                    if (!group) return;
+
+                    group.options.push({
+                        value: s.id,
+                        label: s.name,
+                        checked: filterSelectionsMap.get('schools')?.has(s.id) || false,
+                        onCheck: handleChecked,
+                        show: true,
+                        disabled: s.founded > +selectedYears[0]?.startYear,
+                    });
+                });
+
+                return Array.from(groupMap.values());
+            })(),
+            type: 'groupedFilterType',
         },
         {
             id: 'subGroups',
             key: 'subGroups',
             name: 'Subgroups',
             options: state.subGroups.map(group => {
+                const isCollision = isSubGroupCollision(
+                    state.subGroupCollisions,
+                    selectedSubgroupIds,
+                    group.id
+                );
+                const visible = isVisible(
+                    state.subGroupToDataSet,
+                    selectedDataSetIds,
+                    'subGroupId',
+                    group.id
+                );
+
                 return {
                     value: group.id,
                     label: group.name,
                     checked: filterSelectionsMap.get('subGroups')?.has(group.id) || false,
                     onCheck: handleChecked,
-                    show: isVisible(
-                        state.subGroupToDataSet,
-                        selectedDataSetIds,
-                        'subGroupId',
-                        group.id
-                    ),
+                    show: true,
+                    disabled: isCollision || !visible,
                 };
             }),
+            groupOptions: null,
+            type: 'singleFilterType',
         },
         {
             id: 'grades',
@@ -324,34 +393,32 @@ const TopBar = ({}: Props) => {
             name: 'Grades',
             options: state.grades.map(grade => {
                 // Wrap in a useMemo
-                let show = true;
                 const gradeIsVisibleByDataSet = isVisible(
                     state.gradeToDataSet,
                     selectedDataSetIds,
                     'gradeId',
                     grade.id
                 );
-                const gradeIsVisibleBySelectedSchool =
-                    selectedSchoolIds?.size === 0 || selectedLevelIds.includes(grade.levelId);
-
-                if (
-                    !gradeIsVisibleByDataSet ||
-                    (gradeIsVisibleByDataSet && !gradeIsVisibleBySelectedSchool)
-                ) {
-                    show = false;
-                }
+                const gradeIsDisabledBySelectedSchool =
+                    (selectedSchoolIds &&
+                        selectedSchoolIds?.size > 0 &&
+                        !selectedLevelIds.includes(grade.levelId)) ||
+                    false;
 
                 return {
                     value: grade.id,
                     label: grade.name,
                     checked: filterSelectionsMap.get('grades')?.has(grade.id) || false,
                     onCheck: handleChecked,
-                    show,
+                    show: true,
+                    disabled: !gradeIsVisibleByDataSet || gradeIsDisabledBySelectedSchool,
                 };
             }),
+            groupOptions: null,
+            type: 'singleFilterType',
         },
     ];
-
+    console.log('filters', filters);
     for (const [key, setValues] of filterSelectionsMap.entries()) {
         for (const value of setValues) {
             let label = '';
@@ -413,40 +480,7 @@ const TopBar = ({}: Props) => {
 
                 <div className="border-b border-gray-200 bg-white pb-4">
                     <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                        <Menu as="div" className="relative inline-block text-left">
-                            <div>
-                                <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                                    Sort
-                                    <Icon.chevronDown
-                                        aria-hidden="true"
-                                        className="-mr-1 ml-1 size-5 shrink-0 text-gray-400 group-hover:text-gray-500"
-                                    />
-                                </MenuButton>
-                            </div>
-
-                            <MenuItems
-                                transition
-                                className="absolute left-0 z-10 mt-2 w-40 origin-top-left rounded-md bg-white shadow-2xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-                            >
-                                <div className="py-1">
-                                    {sortOptions.map(option => (
-                                        <MenuItem key={option.name}>
-                                            <a
-                                                href={option.href}
-                                                className={[
-                                                    option.current
-                                                        ? 'font-medium text-gray-900'
-                                                        : 'text-gray-500',
-                                                    'block px-4 py-2 text-sm data-focus:bg-gray-100 data-focus:outline-hidden',
-                                                ].join(' ')}
-                                            >
-                                                {option.name}
-                                            </a>
-                                        </MenuItem>
-                                    ))}
-                                </div>
-                            </MenuItems>
-                        </Menu>
+                        <SortMenu sortOptions={sortOptions} />
 
                         <button
                             type="button"
@@ -458,98 +492,11 @@ const TopBar = ({}: Props) => {
 
                         <div className="hidden sm:block">
                             <div className="flow-root">
-                                <PopoverGroup className="-mx-4 flex items-center divide-x divide-gray-200">
-                                    {filters.map(section => (
-                                        <Popover
-                                            key={section.name}
-                                            className="relative inline-block px-4 text-left"
-                                        >
-                                            <PopoverButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                                                <span>{section.name}</span>
-                                                <span
-                                                    className={[
-                                                        'ml-1.5 rounded-sm bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-700 tabular-nums',
-                                                        notify[section.key as FilterKeys]
-                                                            ? 'animate-ping'
-                                                            : '',
-                                                    ].join(' ')}
-                                                >
-                                                    {
-                                                        filterSelectionsMap.get(
-                                                            section.key as FilterKeys
-                                                        )?.size
-                                                    }
-                                                </span>
-                                                <Icon.chevronDown
-                                                    aria-hidden="true"
-                                                    className="-mr-1 ml-1 size-5 shrink-0 text-gray-400 group-hover:text-gray-500"
-                                                />
-                                            </PopoverButton>
-
-                                            <PopoverPanel
-                                                transition
-                                                className="absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-                                            >
-                                                <form className="space-y-4">
-                                                    {section.options
-                                                        .filter(o => o.show)
-                                                        .map((option, optionIdx) => (
-                                                            <div
-                                                                key={option.value}
-                                                                className="flex gap-3"
-                                                            >
-                                                                <div className="flex h-5 shrink-0 items-center">
-                                                                    <div className="group grid size-4 grid-cols-1">
-                                                                        <input
-                                                                            defaultValue={
-                                                                                option.value
-                                                                            }
-                                                                            defaultChecked={
-                                                                                option.checked
-                                                                            }
-                                                                            id={`filter-${section.id}-${optionIdx}`}
-                                                                            name={section.key}
-                                                                            type="checkbox"
-                                                                            className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-                                                                            onChange={
-                                                                                option.onCheck
-                                                                            }
-                                                                        />
-                                                                        <svg
-                                                                            fill="none"
-                                                                            viewBox="0 0 14 14"
-                                                                            className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                                                                        >
-                                                                            <path
-                                                                                d="M3 8L6 11L11 3.5"
-                                                                                strokeWidth={2}
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                className="opacity-0 group-has-checked:opacity-100"
-                                                                            />
-                                                                            <path
-                                                                                d="M3 7H11"
-                                                                                strokeWidth={2}
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                className="opacity-0 group-has-indeterminate:opacity-100"
-                                                                            />
-                                                                        </svg>
-                                                                    </div>
-                                                                </div>
-                                                                <label
-                                                                    htmlFor={`filter-${section.id}-${optionIdx}`}
-                                                                    className="pr-6 text-sm font-medium whitespace-nowrap text-gray-900"
-                                                                >
-                                                                    {option.label}
-                                                                </label>
-                                                            </div>
-                                                        ))}
-                                                </form>
-                                            </PopoverPanel>
-                                        </Popover>
-                                    ))}
-                                </PopoverGroup>
+                                <OptionsPopover
+                                    filters={filters}
+                                    filterSelectionsMap={filterSelectionsMap}
+                                    notify={notify}
+                                />
                             </div>
                         </div>
                     </div>
@@ -557,8 +504,8 @@ const TopBar = ({}: Props) => {
 
                 {/* Active filters */}
                 <div className="bg-gray-100">
-                    <div className="mx-auto max-w-7xl px-4 py-3 sm:flex sm:items-center sm:px-6 lg:px-8">
-                        <h3 className="text-sm font-medium text-gray-500">
+                    <div className="mx-auto max-w-7xl min-h-16 px-4 py-3 sm:flex sm:items-center sm:px-6 lg:px-8">
+                        <h3 className="text-sm font-medium text-gray-600">
                             Filters
                             <span className="sr-only">, active</span>
                         </h3>
@@ -571,41 +518,11 @@ const TopBar = ({}: Props) => {
                         <div className="mt-2 sm:mt-0 sm:ml-4">
                             <div className="-m-1 flex flex-wrap items-center">
                                 {activeFilters.map(activeFilter => (
-                                    <span
-                                        key={`${activeFilter.id}-${activeFilter.title}-${activeFilter.label}`}
-                                        className="m-1 inline-flex items-center rounded-full border border-gray-200 bg-white py-1.5 pr-2 pl-3 text-sm font-medium text-gray-900"
-                                    >
-                                        <span className="flex flex-col px-0.5">
-                                            <span className="text-xs">{activeFilter.title}</span>
-                                            <span>{activeFilter.label}</span>
-                                        </span>
-                                        <button
-                                            type="button"
-                                            className="ml-1 inline-flex size-4 shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-500"
-                                            onClick={() =>
-                                                handleUpdateFilterSelectMap(
-                                                    activeFilter.title,
-                                                    activeFilter.id
-                                                )
-                                            }
-                                        >
-                                            <span className="sr-only">
-                                                Remove filter for {activeFilter.label}
-                                            </span>
-                                            <svg
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 8 8"
-                                                className="size-2"
-                                            >
-                                                <path
-                                                    d="M1 1l6 6m0-6L1 7"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </span>
+                                    <ActiveFilterPill
+                                        key={`${activeFilter.id}-${activeFilter.label}`}
+                                        activeFilter={activeFilter}
+                                        handleUpdateFilterSelectMap={handleUpdateFilterSelectMap}
+                                    />
                                 ))}
                             </div>
                         </div>

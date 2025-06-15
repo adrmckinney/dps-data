@@ -20,7 +20,7 @@ import { SubgroupRepo } from '../../repos/subgroupRepo.ts';
 import { YearRepo } from '../../repos/yearRepo.ts';
 import type { RawPopulationData } from '../../types/population.ts';
 import type { DataSetFilterGroup } from '../../types/queryModifiers.ts';
-import { GradePopulationResponse } from '../../types/queryResponseTypes.ts';
+import type { GradePopulationResponse } from '../../types/queryResponseTypes.ts';
 import { tryCatch, tryCatchSync } from '../../utils/tryCatch.ts';
 import { DataSetService } from '../dataSetService.ts';
 import { DataSourceToDataSetService } from '../dataSourceToDataSetService.ts';
@@ -221,6 +221,7 @@ export const PopulationService = {
                 throw error;
             },
         });
+
         const subgroupsMap = new Map(subGroups.map(sg => [sg.secondaryKey, sg]));
 
         const preparedSubgroupData = tryCatchSync({

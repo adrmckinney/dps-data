@@ -2,6 +2,7 @@
 
 import { FolderIcon, HomeIcon, UsersIcon } from '@heroicons/react/20/solid';
 import { ComponentType, SVGProps, useState } from 'react';
+import Graph from './Graph';
 import SideBar from './SideBar';
 import SideBarMobile from './SideBarMobile';
 import TopBar from './TopBar';
@@ -62,7 +63,9 @@ const Main = () => {
             <div className="lg:pl-72">
                 <TopBar userNavigation={userNavigation} setSidebarOpen={setSidebarOpen} />
                 <main className="py-10">
-                    <div className="px-4 sm:px-6 lg:px-8">{/* Your content */}</div>
+                    <div className="px-4 sm:px-6 lg:px-8">
+                        <Graph />
+                    </div>
                 </main>
             </div>
         </div>

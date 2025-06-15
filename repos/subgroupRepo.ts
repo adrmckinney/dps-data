@@ -25,6 +25,21 @@ export const SubgroupRepo = {
         }
     },
 
+    async getSubgroupsByIds(ids: number[]): Promise<SubGroup[] | null> {
+        try {
+            return prisma.subGroup.findMany({
+                where: {
+                    id: {
+                        in: ids,
+                    },
+                },
+            });
+        } catch (error: unknown) {
+            const originalMsg = getOriginalErrorMessage(error);
+            throw new DBError(`DB error finding subgroups ${ids}`, originalMsg);
+        }
+    },
+
     async createSubGroup(data: FlatSubGroupCreateInput): Promise<SubGroup> {
         try {
             return await prisma.subGroup.create({ data });

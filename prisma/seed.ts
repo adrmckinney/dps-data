@@ -24,6 +24,7 @@ import { SubjectToDataSetService } from '../services/subjectToDataSetService.ts'
 import { YearService } from '../services/yearService.ts';
 
 async function main() {
+    // NEED TO ADD DATASOURCETODATASET
     await prisma.dataSourceType.createMany({ data: DATA_SOURCE_TYPES_SEED, skipDuplicates: true });
 
     await DataSetService.createDataSets(DATA_SETS_SEED);

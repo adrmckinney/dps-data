@@ -1,5 +1,5 @@
 import { ScopedFiltersOptions } from '@/types/queryModifiers';
-import { DataSet } from '@prisma/client';
+import { DataSet, SubGroup, SubGroupCollision } from '@prisma/client';
 
 type PivotWithDataSet = { dataSetId: number; [key: string]: number | Date };
 
@@ -49,4 +49,29 @@ export function isFilterInScope<T extends PivotWithDataSet>(
         if (!isIdScoped) isScoped = false;
     });
     return isScoped;
+}
+
+/**
+ * The currentId in the options map (parent component) is the targetId of the collision data.
+ * We need to check if the currentId collides with any of the selected subGroupIds. We check
+ * by filtering on collisionData.
+ *
+ * @param collisionData
+ * @param selectedSubGroupIds
+ * @param currentId
+ */
+export function isSubGroupCollision(
+    collisionData: SubGroupCollision[],
+    selectedSubGroupIds: Set<number>,
+    currentId: SubGroup['id']
+) {
+    let collision = false;
+    selectedSubGroupIds.forEach(selectedID => {
+        const isCollision = collisionData.some(
+            c => c.sourceId === selectedID && c.targetId === currentId
+        );
+        if (isCollision) collision = true;
+        return;
+    });
+    return collision;
 }

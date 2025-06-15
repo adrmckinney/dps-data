@@ -31,6 +31,21 @@ export const SubGroupCollisionRepo = {
         }
     },
 
+    async getComboTypeSubGroupCollisions(): Promise<SubGroupCollision[]> {
+        try {
+            return prisma.subGroupCollision.findMany({
+                where: {
+                    source: {
+                        typeId: 4,
+                    },
+                },
+            });
+        } catch (error: unknown) {
+            const originalMsg = getOriginalErrorMessage(error);
+            throw new DBError('DB error fetching comboTypeSubGroupCollisions', originalMsg);
+        }
+    },
+
     async createSubGroupCollisionRecord(
         data: FlatSubGroupCollisionCreateInput
     ): Promise<SubGroupCollision> {

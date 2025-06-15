@@ -12,6 +12,7 @@ import type {
     LevelToDataSet,
     School,
     SubGroup,
+    SubGroupCollision,
     SubGroupToDataSet,
     SubGroupType,
     Subject,
@@ -38,6 +39,7 @@ type ReferenceState = {
     subGroupToDataSet: SubGroupToDataSet[];
     subjectToDataSet: SubjectToDataSet[];
     dataSourceTypes: DataSourceType[];
+    subGroupCollisions: SubGroupCollision[];
 };
 
 type Action = { type: 'SET_REFERENCE_DATA'; key: keyof ReferenceState; payload: unknown };
@@ -59,6 +61,7 @@ const initialState: ReferenceState = {
     subGroupToDataSet: [],
     subjectToDataSet: [],
     dataSourceTypes: [],
+    subGroupCollisions: [],
 };
 
 const ReferenceContext = createContext<{

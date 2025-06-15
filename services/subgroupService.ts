@@ -37,7 +37,7 @@ export const SubgroupService = {
                     throw error;
                 }
                 throw new InternalServerError(
-                    'Unexpected error in SubgroupService getSubgroupsById',
+                    'Unexpected error in SubgroupService getSubgroupById',
                     error
                 );
             },
@@ -45,6 +45,27 @@ export const SubgroupService = {
 
         if (!subgroup) {
             throw new NotFoundError(`Subgroup with ID ${id} not found`);
+        }
+
+        return subgroup;
+    },
+
+    async getSubgroupsByIds(ids: number[]) {
+        const subgroup = await tryCatch({
+            tryFn: () => SubgroupRepo.getSubgroupsByIds(ids),
+            catchFn: error => {
+                if (error instanceof AppError) {
+                    throw error;
+                }
+                throw new InternalServerError(
+                    'Unexpected error in SubgroupService getSubgroupsByIds',
+                    error
+                );
+            },
+        });
+
+        if (!subgroup) {
+            throw new NotFoundError(`Subgroups with IDs ${ids} not found`);
         }
 
         return subgroup;

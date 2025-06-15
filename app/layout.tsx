@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 // import { Geist, Geist_Mono } from 'next/font/google';
 import InitReferenceData from './components/initReferenceData';
 import { ReferenceProvider } from './context/referenceContext';
+import { VisualProvider } from './context/visualContextProvider';
 import './globals.css';
 
 // const geistSans = Geist({
@@ -28,8 +29,10 @@ export default function RootLayout({
         <html lang="en" className="h-full bg-white">
             <body className="h-full">
                 <ReferenceProvider>
-                    <InitReferenceData />
-                    {children}
+                    <VisualProvider>
+                        <InitReferenceData />
+                        {children}
+                    </VisualProvider>
                 </ReferenceProvider>
             </body>
         </html>

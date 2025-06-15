@@ -26,6 +26,7 @@ export default function InitReferenceData() {
                 subGroupToDataSet,
                 subjectToDataSet,
                 dataSourceTypes,
+                subGroupCollisions,
             } = await getAllReferenceData();
 
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'years', payload: years });
@@ -37,6 +38,11 @@ export default function InitReferenceData() {
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'subGroupTypes', payload: subGroupTypes });
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'subGroups', payload: subGroups });
             dispatch({ type: 'SET_REFERENCE_DATA', key: 'dataSets', payload: dataSets });
+            dispatch({
+                type: 'SET_REFERENCE_DATA',
+                key: 'subGroupCollisions',
+                payload: subGroupCollisions,
+            });
             dispatch({
                 type: 'SET_REFERENCE_DATA',
                 key: 'dataSourceToDataSet',

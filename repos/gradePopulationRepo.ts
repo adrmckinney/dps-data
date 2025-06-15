@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.ts';
-import { GradePopulationResponse } from '../types/queryResponseTypes.ts';
+import type { GradePopulationResponse } from '../types/queryResponseTypes.ts';
 import type { BulkInsertResult } from '../types/repo.ts';
 
 export const GradePopulationRepo = {

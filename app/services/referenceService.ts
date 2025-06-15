@@ -16,6 +16,7 @@ export async function getAllReferenceData() {
         subGroupToDataSet,
         subjectToDataSet,
         dataSourceTypes,
+        subGroupCollisions,
     ] = await Promise.all([
         fetch('/api/years').then(res => res.json()),
         fetch('/api/grades').then(res => res.json()),
@@ -33,6 +34,7 @@ export async function getAllReferenceData() {
         fetch('/api/subGroupToDataSet').then(res => res.json()),
         fetch('/api/subjectToDataSet').then(res => res.json()),
         fetch('/api/dataSourceType').then(res => res.json()),
+        fetch('/api/subGroupCollision').then(res => res.json()),
     ]);
 
     return {
@@ -52,5 +54,6 @@ export async function getAllReferenceData() {
         subGroupToDataSet,
         subjectToDataSet,
         dataSourceTypes,
+        subGroupCollisions,
     };
 }
