@@ -5,7 +5,7 @@ import { QueryModifiers } from '@/types/queryModifiers';
 import { QueryModifierResponse } from '@/types/queryResponseTypes';
 import { tryCatch } from '@/utils/tryCatch';
 import { Level } from '@prisma/client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { isSubGroupCollision, isVisible } from '../../utils/filterScopeAndVisibilityUtils';
 import SortMenu from '../components/topBar/SortMenu';
 import { useReferenceContext } from '../context/referenceContext';
@@ -49,6 +49,7 @@ export type GroupOption = {
 };
 
 export type FilterOption = {
+    key: string;
     value: number;
     label: string;
     checked: boolean;
@@ -92,6 +93,14 @@ const initialNotify: Record<FilterKeys, boolean> = {
     schools: false,
     subGroups: false,
     grades: false,
+};
+
+const devFilters = {
+    GRADE_POP_ONE_SCHOOL_ONE_GRADE: [
+        { name: 'dataSets', value: 1 },
+        { name: 'schools', value: 55 },
+        { name: 'grades', value: 14 },
+    ],
 };
 
 const TopBar = ({}: Props) => {
@@ -224,8 +233,18 @@ const TopBar = ({}: Props) => {
 
     // console.log('filterSelectionsMap', filterSelectionsMap);
 
+    useEffect(() => {
+        const targetDevFilter = devFilters.GRADE_POP_ONE_SCHOOL_ONE_GRADE;
+        if (state.dataSets.length) {
+            targetDevFilter.forEach(filter => {
+                handleUpdateFilterSelectMap(filter.name, filter.value);
+            });
+        }
+    }, [JSON.stringify(state.dataSets)]);
+
     const handleFilterSubmit = async () => {
         const dataSets = filterSelectionsMap.get('dataSets');
+
         if (!dataSets) return;
 
         const payloadFilters: QueryModifiers = mapFilterMapToQueryModifiers(filterSelectionsMap);
@@ -246,24 +265,21 @@ const TopBar = ({}: Props) => {
             if (resGroup.type === 'population_grade') {
                 const hydratedGradeData = hydrateGradePopulationData(resGroup);
 
-                console.log('hydratedGradeData in pop grad', hydratedGradeData);
                 if (hydratedGradeData && hydratedGradeData.type === 'population_grade') {
-                    visualDispatch({ type: 'POPULATION_GRADE', payload: hydratedGradeData.data });
+                    visualDispatch({ type: 'POPULATION_GRADE', payload: hydratedGradeData });
                 }
             }
 
             if (resGroup.type === 'population_subgroup') {
                 const hydratedSubGroupData = hydrateSubGroupPopulationData(resGroup);
 
-                console.log('hydratedSubGroupData in sub pop', hydratedSubGroupData);
                 if (hydratedSubGroupData && hydratedSubGroupData.type === 'population_subgroup') {
                     visualDispatch({
                         type: 'POPULATION_SUB_GROUP',
-                        payload: hydratedSubGroupData.data,
+                        payload: hydratedSubGroupData,
                     });
                 }
             }
-            // console.log('res outside', res);
         });
     };
 
@@ -285,6 +301,7 @@ const TopBar = ({}: Props) => {
                 .filter(ds => ds.label !== 'Other')
                 .map(ds => {
                     return {
+                        key: 'dataSets',
                         value: ds.id,
                         label: ds.label,
                         checked: filterSelectionsMap.get('dataSets')?.has(ds.id) || false,
@@ -302,6 +319,7 @@ const TopBar = ({}: Props) => {
             name: 'Year',
             options: state.years.map(y => {
                 return {
+                    key: 'years',
                     value: y.id,
                     label: y.schoolYear.replace('-', ' - '),
                     checked: filterSelectionsMap.get('years')?.has(y.id) || false,
@@ -345,6 +363,7 @@ const TopBar = ({}: Props) => {
                     if (!group) return;
 
                     group.options.push({
+                        key: 'schools',
                         value: s.id,
                         label: s.name,
                         checked: filterSelectionsMap.get('schools')?.has(s.id) || false,
@@ -376,6 +395,7 @@ const TopBar = ({}: Props) => {
                 );
 
                 return {
+                    key: 'subGroups',
                     value: group.id,
                     label: group.name,
                     checked: filterSelectionsMap.get('subGroups')?.has(group.id) || false,
@@ -406,6 +426,7 @@ const TopBar = ({}: Props) => {
                     false;
 
                 return {
+                    key: 'grades',
                     value: grade.id,
                     label: grade.name,
                     checked: filterSelectionsMap.get('grades')?.has(grade.id) || false,
@@ -418,7 +439,7 @@ const TopBar = ({}: Props) => {
             type: 'singleFilterType',
         },
     ];
-    console.log('filters', filters);
+    // console.log('filters', filters);
     for (const [key, setValues] of filterSelectionsMap.entries()) {
         for (const value of setValues) {
             let label = '';

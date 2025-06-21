@@ -1,16 +1,35 @@
 'use client';
 
-import { HydratedGradePopulation, HydratedSubGroupPopulation } from '@/types/queryResponseTypes';
+import { HydratedQueryModifierResponse } from '@/types/queryResponseTypes';
 import { createContext, Dispatch, ReactNode, useContext, useReducer } from 'react';
 
+// type VisualizationState = {
+//     population_grade: HydratedGradePopulation[] | null;
+//     population_subgroup: HydratedSubGroupPopulation[] | null;
+// };
 type VisualizationState = {
-    population_grade: HydratedGradePopulation[] | null;
-    population_subgroup: HydratedSubGroupPopulation[] | null;
+    population_grade: Extract<HydratedQueryModifierResponse, { type: 'population_grade' }> | null;
+    population_subgroup: Extract<
+        HydratedQueryModifierResponse,
+        { type: 'population_subgroup' }
+    > | null;
 };
 
+// type VisualizationAction =
+//     | { type: 'POPULATION_GRADE'; payload: HydratedGradePopulation[] }
+//     | { type: 'POPULATION_SUB_GROUP'; payload: HydratedSubGroupPopulation[] }
+//     | { type: 'RESET' };
+
 type VisualizationAction =
-    | { type: 'POPULATION_GRADE'; payload: HydratedGradePopulation[] }
-    | { type: 'POPULATION_SUB_GROUP'; payload: HydratedSubGroupPopulation[] };
+    | {
+          type: 'POPULATION_GRADE';
+          payload: Extract<HydratedQueryModifierResponse, { type: 'population_grade' }>;
+      }
+    | {
+          type: 'POPULATION_SUB_GROUP';
+          payload: Extract<HydratedQueryModifierResponse, { type: 'population_subgroup' }>;
+      }
+    | { type: 'RESET' };
 
 function visualizationReducer(
     state: VisualizationState,
@@ -21,6 +40,8 @@ function visualizationReducer(
             return { ...state, population_grade: action.payload };
         case 'POPULATION_SUB_GROUP':
             return { ...state, population_subgroup: action.payload };
+        case 'RESET':
+            return initialState;
         default:
             return state;
     }

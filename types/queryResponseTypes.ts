@@ -10,10 +10,6 @@ import type {
     Year,
 } from '@prisma/client';
 
-export type QueryModifierResponse =
-    | { dataSetId: DataSet['id']; type: 'population_grade'; data: GradePopulationResponse[] }
-    | { dataSetId: DataSet['id']; type: 'population_subgroup'; data: SubGroupPopulationResponse[] };
-
 export type GradePopulationResponse = Pick<
     GradePopulation,
     'id' | 'count' | 'createdAt' | 'gradeId' | 'pdfSourceId' | 'schoolId' | 'updatedAt' | 'yearId'
@@ -31,14 +27,24 @@ export type SubGroupPopulationResponse = Pick<
     | 'updatedAt'
 >;
 
+export type QueryModifierResponse =
+    | { dataSetId: DataSet['id']; type: 'population_grade'; data: GradePopulationResponse[] }
+    | { dataSetId: DataSet['id']; type: 'population_subgroup'; data: SubGroupPopulationResponse[] };
+
 export type HydratedQueryModifierResponse = Hydrate<QueryModifierResponse>;
 
 type Hydrate<T extends QueryModifierResponse> = T extends {
     type: 'population_grade';
 }
-    ? Omit<T, 'data'> & { data: HydratedGradePopulation[] }
+    ? Omit<T, 'data'> & {
+          data: HydratedGradePopulation[];
+          plottableFields: { [key: string]: string[] };
+      }
     : T extends { type: 'population_subgroup' }
-    ? Omit<T, 'data'> & { data: HydratedSubGroupPopulation[] }
+    ? Omit<T, 'data'> & {
+          data: HydratedSubGroupPopulation[];
+          plottableFields: { [key: string]: string[] };
+      }
     : never;
 
 export type HydratedGradePopulation = Omit<

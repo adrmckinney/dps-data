@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 // import { Geist, Geist_Mono } from 'next/font/google';
 import InitReferenceData from './components/initReferenceData';
+import { GraphProvider } from './context/graphContextProvider';
 import { ReferenceProvider } from './context/referenceContext';
 import { VisualProvider } from './context/visualContextProvider';
 import './globals.css';
@@ -30,8 +31,10 @@ export default function RootLayout({
             <body className="h-full">
                 <ReferenceProvider>
                     <VisualProvider>
-                        <InitReferenceData />
-                        {children}
+                        <GraphProvider>
+                            <InitReferenceData />
+                            {children}
+                        </GraphProvider>
                     </VisualProvider>
                 </ReferenceProvider>
             </body>

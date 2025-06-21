@@ -1,12 +1,26 @@
-import { Filter, FilterOption, GroupedFilter } from '@/app/ui/TopBar';
+import { FormChangeType } from '@/types/formChangeTypes';
 
-type Props = {
-    section: Filter | GroupedFilter;
-    option: FilterOption;
-    optionIdx: number;
+export type CheckBoxOption = {
+    key: string;
+    value: number | string;
+    label: string;
+    checked: boolean;
+    onCheck: (e: FormChangeType) => void;
+    show: boolean;
+    disabled: boolean;
 };
 
-const CheckBox = ({ section, option, optionIdx }: Props) => {
+type Props = {
+    option: CheckBoxOption;
+    fontColor?: string;
+    disabledFontColor?: string;
+};
+
+const CheckBox = ({
+    option,
+    fontColor = 'text-gray-900',
+    disabledFontColor = 'text-gray-400',
+}: Props) => {
     return (
         <>
             <div className="flex h-5 shrink-0 items-center">
@@ -14,8 +28,8 @@ const CheckBox = ({ section, option, optionIdx }: Props) => {
                     <input
                         defaultValue={option.value}
                         defaultChecked={option.checked}
-                        id={`filter-${section.id}-${optionIdx}`}
-                        name={section.key}
+                        id={`filter-${option.value}-${option.label}`}
+                        name={option.key}
                         type="checkbox"
                         className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
                         onChange={option.onCheck}
@@ -44,10 +58,10 @@ const CheckBox = ({ section, option, optionIdx }: Props) => {
                 </div>
             </div>
             <label
-                htmlFor={`filter-${section.id}-${optionIdx}`}
+                htmlFor={`filter-${option.value}-${option.label}`}
                 className={[
                     'pr-6 text-sm font-medium whitespace-nowrap',
-                    option.disabled ? 'text-gray-400' : 'text-gray-900',
+                    option.disabled ? disabledFontColor : fontColor,
                 ].join(' ')}
             >
                 {option.label}

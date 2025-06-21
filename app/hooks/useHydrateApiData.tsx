@@ -10,6 +10,9 @@ import {
 import { Grade, School, SubGroup, Year } from '@prisma/client';
 import { useReferenceContext } from '../context/referenceContext';
 
+const plottableSchoolFields = ['name', 'code', 'abbreviation'];
+const plottableYearFields = ['schoolYear', 'startYear', 'endYear'];
+
 const useHydrateApiData = () => {
     const { state } = useReferenceContext();
 
@@ -17,6 +20,13 @@ const useHydrateApiData = () => {
         data: QueryModifierResponse
     ): HydratedQueryModifierResponse | null => {
         if (data.type !== 'population_grade') return null;
+        // const plottableFields = ['school', 'grade', 'year', 'count'];
+        const plottableFields = {
+            school: plottableSchoolFields,
+            grade: ['name', 'abbreviation'],
+            year: plottableYearFields,
+            count: [],
+        };
 
         const hydratedData: HydratedGradePopulation[] = data.data.map(datum => {
             const school = getSchoolAndLevel(datum.schoolId);
@@ -33,6 +43,7 @@ const useHydrateApiData = () => {
 
         return {
             ...data,
+            plottableFields,
             data: hydratedData,
         };
     };
@@ -41,6 +52,14 @@ const useHydrateApiData = () => {
         data: QueryModifierResponse
     ): HydratedQueryModifierResponse | null => {
         if (data.type !== 'population_subgroup') return null;
+        // const plottableFields = ['year', 'school', 'subGroup', 'count'];
+        const plottableFields = {
+            school: plottableSchoolFields,
+            subGroup: ['name', 'abbreviation'],
+            year: plottableYearFields,
+            count: [],
+        };
+
         const hydratedData = data.data.map(datum => {
             const year = getYear(datum.yearId);
             const school = getSchoolAndLevel(datum.schoolId);
@@ -56,6 +75,7 @@ const useHydrateApiData = () => {
 
         return {
             ...data,
+            plottableFields,
             data: hydratedData,
         };
     };

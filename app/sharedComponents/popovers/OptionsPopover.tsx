@@ -54,11 +54,7 @@ const OptionsPopover = ({ filters, filterSelectionsMap, notify }: Props) => {
                                               key={`${option.value}-${optionIdx}`}
                                               className="flex gap-3"
                                           >
-                                              <CheckBox
-                                                  section={section}
-                                                  option={option}
-                                                  optionIdx={optionIdx}
-                                              />
+                                              <CheckBox option={option} />
                                           </div>
                                       ))
                                 : section.groupOptions &&
@@ -75,11 +71,7 @@ const OptionsPopover = ({ filters, filterSelectionsMap, notify }: Props) => {
                                                   key={`${option.label}-${optionIdx}`}
                                                   className="flex gap-3"
                                               >
-                                                  <CheckBox
-                                                      section={section}
-                                                      option={option}
-                                                      optionIdx={optionIdx}
-                                                  />
+                                                  <CheckBox option={option} />
                                               </div>
                                           ))}
                                       </fieldset>
